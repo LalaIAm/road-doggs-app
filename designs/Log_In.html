@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log In — RoadDoggs</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'moss': '#2C4A3B',
+                        'moss-light': '#3E614F',
+                        'sand': '#F4F2EE',
+                        'sand-dark': '#E6E2DA',
+                        'charcoal': '#1A1A1A',
+                        'ochre': '#C27835',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif'],
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.8s ease-out forwards',
+                        'fade-in': 'fadeIn 1s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #F4F2EE;
+            color: #1A1A1A;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Floating Label Logic */
+        .floating-input:focus ~ label,
+        .floating-input:not(:placeholder-shown) ~ label {
+            transform: translateY(-1.5rem) scale(0.85);
+            color: #2C4A3B;
+            font-weight: 600;
+        }
+
+        /* Glass Utility */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 lg:p-0">
+
+    <div class="w-full max-w-[1920px] bg-white lg:min-h-screen grid lg:grid-cols-12 shadow-2xl overflow-hidden">
+        
+        <!-- LEFT: Visual Storytelling (Takes up 5 columns on desktop) -->
+        <!-- Image Choice: Sunset/Evening to imply "settling in" or returning -->
+        <div class="lg:col-span-5 relative hidden lg:block overflow-hidden bg-charcoal">
+            <!-- Background Image -->
+            <img src="https://images.unsplash.com/photo-1523987355523-c7b5b0dd90a7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1740&q=80" 
+                 alt="Camping at sunset with van" 
+                 class="absolute inset-0 w-full h-full object-cover opacity-70 mix-blend-overlay animate-fade-in">
+            
+            <!-- Gradient Overlay (Warmer for login) -->
+            <div class="absolute inset-0 bg-gradient-to-t from-charcoal/90 via-charcoal/40 to-moss/30"></div>
+
+            <!-- Content -->
+            <div class="absolute inset-0 flex flex-col justify-between p-12 z-10">
+                <!-- Brand -->
+                <a href="#" class="flex items-center gap-2 text-white w-fit opacity-90 hover:opacity-100 transition-opacity" rel="nofollow">
+                    <i class="ph-fill ph-map-trifold text-2xl"></i>
+                    <span class="font-display font-semibold text-xl tracking-tight">RoadDoggs</span>
+                </a>
+
+                <!-- Message -->
+                <div class="space-y-6">
+                    <div class="glass-panel p-6 rounded-2xl border-l-4 border-l-ochre animate-fade-in-up" style="animation-delay: 0.2s;">
+                        <p class="font-display text-2xl text-white leading-snug mb-2">
+                            "The best part was pulling up the saved map when we lost signal 50 miles from nowhere."
+                        </p>
+                    </div>
+                    
+                     <div class="flex items-center justify-between text-white/60 text-xs font-medium tracking-wide uppercase animate-fade-in-up" style="animation-delay: 0.3s;">
+                        <span>Your itinerary is waiting</span>
+                         <div class="flex gap-2">
+                             <span class="w-1.5 h-1.5 rounded-full bg-white/40"></span>
+                             <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
+                             <span class="w-1.5 h-1.5 rounded-full bg-white/40"></span>
+                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: Login Form -->
+        <div class="lg:col-span-7 bg-sand flex flex-col justify-center px-6 py-12 lg:p-24 relative">
+            
+            <!-- Mobile Header -->
+            <div class="lg:hidden mb-8">
+                 <div class="flex items-center gap-2 text-moss">
+                    <i class="ph-fill ph-map-trifold text-2xl"></i>
+                    <span class="font-display font-semibold text-xl">RoadDoggs</span>
+                </div>
+            </div>
+
+            <!-- Back Link -->
+            <a href="#" class="absolute top-8 right-8 lg:top-12 lg:right-12 flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-moss transition-colors" rel="nofollow">
+                Back to Home <i class="ph ph-arrow-right"></i>
+            </a>
+
+            <div class="w-full max-w-md mx-auto animate-fade-in-up">
+                
+                <!-- Header -->
+                <div class="mb-10">
+                    <span class="text-ochre font-bold tracking-widest text-xs uppercase mb-2 block">Resume Adventure</span>
+                    <h1 class="font-display text-4xl lg:text-5xl font-semibold text-charcoal mb-3">Welcome back.</h1>
+                    <p class="text-gray-600">Pick up exactly where you left off.</p>
+                </div>
+
+                <!-- Google Auth -->
+                <button class="w-full bg-white border border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-charcoal font-medium py-3.5 px-4 rounded-xl flex items-center justify-center gap-3 transition-all duration-200 shadow-sm mb-6 group">
+                   <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                   <span class="group-hover:text-moss transition-colors">Log in with Google</span>
+                </button>
+
+                <div class="relative flex py-2 items-center mb-6">
+                    <div class="flex-grow border-t border-gray-300"></div>
+                    <span class="flex-shrink-0 mx-4 text-gray-400 text-xs uppercase tracking-wider font-semibold">Or with email</span>
+                    <div class="flex-grow border-t border-gray-300"></div>
+                </div>
+
+                <!-- Main Form -->
+                <form action="#" class="space-y-6">
+                    
+                    <!-- Email -->
+                    <div class="relative">
+                        <input type="email" id="email" name="email" placeholder=" " 
+                               class="floating-input peer block px-4 py-3.5 w-full text-charcoal bg-white border border-gray-200 rounded-xl appearance-none focus:outline-none focus:ring-1 focus:ring-moss focus:border-moss transition-colors" required />
+                        <label for="email" class="absolute text-gray-500 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2 peer-focus:px-2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-3 cursor-text">
+                            Email Address
+                        </label>
+                        <i class="ph ph-envelope absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    </div>
+
+                    <!-- Password -->
+                    <div>
+                        <div class="relative">
+                            <input type="password" id="password" name="password" placeholder=" " 
+                                   class="floating-input peer block px-4 py-3.5 w-full text-charcoal bg-white border border-gray-200 rounded-xl appearance-none focus:outline-none focus:ring-1 focus:ring-moss focus:border-moss transition-colors" required />
+                            <label for="password" class="absolute text-gray-500 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2 peer-focus:px-2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-3 cursor-text">
+                                Password
+                            </label>
+                            <i class="ph ph-lock-key absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg"></i>
+                        </div>
+                        <div class="flex justify-end mt-2">
+                            <a href="#" class="text-xs font-medium text-gray-500 hover:text-moss transition-colors" rel="nofollow">Forgot your password?</a>
+                        </div>
+                    </div>
+                    
+                    <!-- Submit Button -->
+                    <button type="submit" class="w-full bg-moss text-white font-semibold py-4 rounded-full shadow-xl shadow-moss/20 hover:shadow-moss/30 hover:scale-[1.01] hover:bg-moss-light transition-all duration-300 flex items-center justify-center gap-2 group">
+                        Log In
+                        <i class="ph-bold ph-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                    </button>
+                    
+                </form>
+
+                <!-- Footer Links -->
+                <div class="mt-8 text-center pt-8 border-t border-gray-200">
+                    <p class="text-sm text-gray-500">
+                        Don't have an account yet? <a href="#" class="text-moss font-semibold hover:text-ochre transition-colors" rel="nofollow">Start planning for free</a>
+                    </p>
+                </div>
+
+            </div>
+
+             <!-- Decorative Bottom Element -->
+             <div class="absolute bottom-0 right-0 opacity-10 pointer-events-none">
+                <i class="ph-fill ph-compass text-[20rem] text-moss transform translate-x-12 translate-y-12"></i>
+           </div>
+        </div>
+    </div>
+
+</body>
+</html>

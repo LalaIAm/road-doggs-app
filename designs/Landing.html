@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoadDoggs — The Intelligent Road Trip Planner</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'moss': '#2C4A3B',
+                        'moss-light': '#3E614F',
+                        'sand': '#F4F2EE',
+                        'sand-dark': '#E6E2DA',
+                        'charcoal': '#1A1A1A',
+                        'ochre': '#C27835',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif'],
+                    },
+                    spacing: {
+                        '128': '32rem',
+                    },
+                    borderRadius: {
+                        '4xl': '2.5rem',
+                        '5xl': '3rem',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Styles for nuances Tailwind handles awkwardly */
+        body {
+            background-color: #F4F2EE;
+            color: #1A1A1A;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Hide Scrollbar for horizontal scrolling containers */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Soft fade-in animation for scroll */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Floating Animation */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .floating-delayed {
+            animation: float 7s ease-in-out infinite 1s;
+        }
+
+        /* Glassmorphism utility */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Map Pin Pulse */
+        @keyframes pulse-ring {
+            0% { transform: scale(0.33); opacity: 0; }
+            80%, 100% { opacity: 0; }
+        }
+        @keyframes pulse-dot {
+            0% { transform: scale(0.8); }
+            50% { transform: scale(1); }
+            100% { transform: scale(0.8); }
+        }
+    </style>
+</head>
+<body class="overflow-x-hidden">
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 top-0 left-0 px-6 py-6 transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto flex justify-between items-center glass-panel rounded-full px-8 py-3">
+            <div class="flex items-center gap-2">
+                <i class="ph-fill ph-map-trifold text-2xl text-moss"></i>
+                <span class="font-display font-semibold text-xl tracking-tight text-moss">RoadDoggs</span>
+            </div>
+            <div class="hidden md:flex gap-8 text-sm font-medium text-gray-600">
+                <a href="#features" class="hover:text-moss transition-colors" rel="nofollow">Features</a>
+                <a href="#how-it-works" class="hover:text-moss transition-colors" rel="nofollow">How it Works</a>
+                <a href="#pricing" class="hover:text-moss transition-colors" rel="nofollow">Pricing</a>
+            </div>
+            <a href="#" class="bg-moss text-white px-6 py-2.5 rounded-full text-sm font-medium hover:bg-moss-light transition-all hover:scale-105" rel="nofollow">
+                Start Planning
+            </a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 px-6">
+        <div class="max-w-7xl mx-auto grid lg:grid-cols-12 gap-12 lg:gap-20 items-center">
+            
+            <!-- Left: Copy -->
+            <div class="lg:col-span-5 flex flex-col gap-8 z-10">
+                <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-gray-200 w-fit">
+                    <span class="w-2 h-2 rounded-full bg-ochre animate-pulse"></span>
+                    <span class="text-xs font-semibold tracking-wide uppercase text-gray-500">The New Standard</span>
+                </div>
+                
+                <h1 class="font-display font-medium text-5xl lg:text-7xl leading-[1.1] text-charcoal">
+                    Plan road trips that <span class="italic font-serif text-moss">actually</span> fit you.
+                </h1>
+                
+                <p class="text-lg text-gray-600 leading-relaxed max-w-md">
+                    AI-powered road trip planning with personalized routes, hidden gems, and real-time collaboration—built for the way people really travel.
+                </p>
+
+                <div class="flex items-center gap-6 mt-2">
+                    <a href="#" class="bg-moss text-white px-8 py-4 rounded-full font-medium inline-flex items-center gap-2 hover:bg-moss-light transition-all shadow-xl shadow-moss/20" rel="nofollow">
+                        Plan Your Trip <i class="ph ph-arrow-right"></i>
+                    </a>
+                    <a href="#" class="text-gray-600 hover:text-moss font-medium underline decoration-gray-300 underline-offset-4" rel="nofollow">
+                        See how it works
+                    </a>
+                </div>
+                
+                <!-- Trust Indicator -->
+                <div class="pt-8 border-t border-gray-200 mt-4">
+                    <p class="text-sm font-medium text-gray-500 mb-3">Trusted by modern explorers</p>
+                    <div class="flex gap-4 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
+                        <i class="ph-fill ph-car text-2xl"></i>
+                        <i class="ph-fill ph-tent text-2xl"></i>
+                        <i class="ph-fill ph-mountains text-2xl"></i>
+                        <i class="ph-fill ph-binoculars text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Product Visual (Abstract UI) -->
+            <div class="lg:col-span-7 relative h-full min-h-[500px]">
+                <!-- Background Blob -->
+                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-tr from-green-100 to-orange-50 rounded-full blur-3xl -z-10 opacity-60"></div>
+
+                <!-- Main Landscape Card -->
+                <div class="relative w-full aspect-[4/3] rounded-[2.5rem] overflow-hidden shadow-2xl floating">
+                    <img src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?ixlib=rb-4.0.3&auto=format&fit=crop&w=2021&q=80" alt="Scenic road trip route" class="object-cover w-full h-full">
+                    
+                    <!-- UI Overlay: Route Planner -->
+                    <div class="absolute top-6 left-6 right-6 flex justify-between items-start">
+                        <div class="glass-panel px-4 py-2 rounded-2xl flex items-center gap-3">
+                            <i class="ph-fill ph-map-pin text-ochre text-xl"></i>
+                            <div>
+                                <p class="text-xs text-gray-500 font-medium uppercase tracking-wider">Current Leg</p>
+                                <p class="text-sm font-semibold text-charcoal">Big Sur Highway 1</p>
+                            </div>
+                        </div>
+                        <div class="glass-panel p-2 rounded-full">
+                             <div class="w-8 h-8 rounded-full bg-moss flex items-center justify-center text-white"><i class="ph ph-users"></i></div>
+                        </div>
+                    </div>
+
+                    <!-- UI Overlay: POI Card -->
+                    <div class="absolute bottom-8 right-8 w-64 glass-panel p-4 rounded-3xl floating-delayed">
+                        <div class="flex gap-3 mb-3">
+                            <img src="https://images.unsplash.com/photo-1497935586351-b67a49e012bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="Coffee" class="w-12 h-12 rounded-xl object-cover">
+                            <div>
+                                <h4 class="font-bold text-sm text-charcoal">Coastal Brews</h4>
+                                <p class="text-xs text-green-700 flex items-center gap-1"><i class="ph-fill ph-star"></i> 4.9 • Hidden Gem</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                             <span class="text-[10px] px-2 py-1 bg-white rounded-md text-gray-600 border border-gray-100">Locals Only</span>
+                             <span class="text-[10px] px-2 py-1 bg-white rounded-md text-gray-600 border border-gray-100">Dog Friendly</span>
+                        </div>
+                        <button class="w-full mt-3 bg-charcoal text-white text-xs py-2 rounded-xl font-medium">Add to Route</button>
+                    </div>
+
+                    <!-- Map Pins -->
+                    <div class="absolute top-1/3 left-1/3 p-2 bg-white rounded-full shadow-lg transform -translate-x-1/2 -translate-y-1/2 cursor-pointer hover:scale-110 transition-transform">
+                        <i class="ph-fill ph-coffee text-ochre"></i>
+                    </div>
+                     <div class="absolute top-1/2 right-1/4 p-2 bg-white rounded-full shadow-lg transform cursor-pointer hover:scale-110 transition-transform">
+                        <i class="ph-fill ph-camera text-moss"></i>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Social Proof Bar -->
+    <section class="border-y border-gray-200 bg-white py-12">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex flex-wrap justify-center gap-x-12 gap-y-6 items-center text-gray-500 font-medium">
+                <span class="uppercase tracking-widest text-xs font-bold text-gray-400">Built for real travel</span>
+                <span class="flex items-center gap-2"><i class="ph-fill ph-check-circle text-moss"></i> Offline-ready</span>
+                <span class="flex items-center gap-2"><i class="ph-fill ph-check-circle text-moss"></i> RV-safe routing</span>
+                <span class="flex items-center gap-2"><i class="ph-fill ph-check-circle text-moss"></i> Multi-user collaboration</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- The Problem -->
+    <section class="py-24 px-6 bg-sand">
+        <div class="max-w-7xl mx-auto">
+            <div class="max-w-xl mb-16 reveal">
+                <h2 class="font-display text-4xl font-medium text-charcoal mb-4">Planning a road trip shouldn’t feel like a second job.</h2>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Card 1 -->
+                <div class="bg-white p-8 rounded-3xl reveal hover:shadow-lg transition-shadow duration-300">
+                    <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-6 text-2xl text-red-400">
+                        <i class="ph-fill ph-tabs"></i>
+                    </div>
+                    <h3 class="font-display text-xl font-semibold mb-3">Tab Overload</h3>
+                    <p class="text-gray-600 leading-relaxed text-sm">Jumping between maps, TripAdvisor, Apple Notes, and three different group chats just to pick lunch.</p>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="bg-white p-8 rounded-3xl reveal transition-shadow duration-300 delay-100">
+                    <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-6 text-2xl text-yellow-500">
+                        <i class="ph-fill ph-road-horizon"></i>
+                    </div>
+                    <h3 class="font-display text-xl font-semibold mb-3">Generic Routes</h3>
+                    <p class="text-gray-600 leading-relaxed text-sm">Google Maps gets you there fast, but misses the scenic overlook, the quirky roadside diner, and the calm.</p>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="bg-white p-8 rounded-3xl reveal hover:shadow-lg transition-shadow duration-300 delay-200">
+                    <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-6 text-2xl text-blue-400">
+                        <i class="ph-fill ph-chat-centered-dots"></i>
+                    </div>
+                    <h3 class="font-display text-xl font-semibold mb-3">Group Chaos</h3>
+                    <p class="text-gray-600 leading-relaxed text-sm">Validating opinions, losing screenshots, and the inevitable "Wait, I thought we were stopping there?"</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- The Solution (High Level) -->
+    <section class="py-24 px-6 overflow-hidden">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid lg:grid-cols-2 gap-16 items-center">
+                <div class="order-2 lg:order-1 relative rounded-[3rem] overflow-hidden h-[600px] reveal">
+                     <img src="https://images.unsplash.com/photo-1758272960281-46b65da6336c?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Friends looking at map" class="w-full h-full object-cover">
+                     <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                     <div class="absolute bottom-8 left-8 text-white">
+                         <p class="font-display text-2xl font-medium">"RoadDoggs saved our Southwest trip."</p>
+                     </div>
+                </div>
+                
+                <div class="order-1 lg:order-2 reveal">
+                    <span class="text-ochre font-semibold tracking-wider text-sm uppercase mb-4 block">The Ecosystem</span>
+                    <h2 class="font-display text-5xl font-medium mb-8 leading-tight">One intelligent planning space for the open road.</h2>
+                    <ul class="space-y-6">
+                        <li class="flex items-start gap-4">
+                            <span class="w-6 h-6 rounded-full bg-moss/10 flex items-center justify-center text-moss mt-1 shrink-0"><i class="ph-fill ph-magic-wand"></i></span>
+                            <div>
+                                <h4 class="font-semibold text-lg text-charcoal">Personalized from the start</h4>
+                                <p class="text-gray-600 mt-1">We don't ask "where are you going?", we ask "how do you want to feel?"</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-4">
+                            <span class="w-6 h-6 rounded-full bg-moss/10 flex items-center justify-center text-moss mt-1 shrink-0"><i class="ph-fill ph-path"></i></span>
+                            <div>
+                                <h4 class="font-semibold text-lg text-charcoal">Route-First Logic</h4>
+                                <p class="text-gray-600 mt-1">Built around the journey, not just the destination pins.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-4">
+                            <span class="w-6 h-6 rounded-full bg-moss/10 flex items-center justify-center text-moss mt-1 shrink-0"><i class="ph-fill ph-wifi-slash"></i></span>
+                            <div>
+                                <h4 class="font-semibold text-lg text-charcoal">Signal Optional</h4>
+                                <p class="text-gray-600 mt-1">Full functionality offline. Because the best spots usually have zero bars.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Key Features Detail -->
+    <section class="py-24 px-6 bg-white" id="features">
+        <div class="max-w-7xl mx-auto space-y-32">
+            
+            <!-- Feature 1 -->
+            <div class="grid lg:grid-cols-2 gap-16 items-center reveal">
+                <div>
+                    <span class="inline-block py-1 px-3 rounded-full bg-sand-dark text-xs font-semibold uppercase tracking-wider mb-6 text-charcoal">AI Intelligence</span>
+                    <h3 class="font-display text-4xl font-medium mb-6">Routes that know you better than you do.</h3>
+                    <p class="text-lg text-gray-600 mb-8">Tell RoadDoggs you love vintage shops and hate highways. The AI builds a custom itinerary balancing drive time with exploration time.</p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="p-4 bg-gray-50 rounded-2xl">
+                            <p class="font-semibold text-moss mb-1">Scenic vs Efficient</p>
+                            <p class="text-xs text-gray-500">Toggle sliders to adjust your vibe.</p>
+                        </div>
+                        <div class="p-4 bg-gray-50 rounded-2xl">
+                            <p class="font-semibold text-moss mb-1">Elevation Aware</p>
+                            <p class="text-xs text-gray-500">Crucial for RVs and towing.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-100 rounded-[2.5rem] h-[500px] w-full overflow-hidden relative group">
+                    <img src="https://images.unsplash.com/photo-1637633059043-949f40c73784?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Scenic Route">
+                    <div class="absolute bottom-8 right-8 glass-panel p-4 rounded-2xl max-w-xs">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-xs font-bold bg-green-100 text-green-800 px-2 py-0.5 rounded">Match: 98%</span>
+                        </div>
+                        <p class="text-sm font-medium">"This route adds 20 mins but passes 3 highly rated antique stores."</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="grid lg:grid-cols-2 gap-16 items-center reveal">
+                <div class="lg:order-2">
+                    <span class="inline-block py-1 px-3 rounded-full bg-sand-dark text-xs font-semibold uppercase tracking-wider mb-6 text-charcoal">Discovery</span>
+                    <h3 class="font-display text-4xl font-medium mb-6">Find the hidden gems standard maps miss.</h3>
+                    <p class="text-lg text-gray-600 mb-8">No more tourist traps. Discover local food, small quirky attractions, and off-the-beaten-path overlooks that fit perfectly into your timeline.</p>
+                    <a href="#" class="text-moss font-medium underline decoration-moss/30 hover:decoration-moss underline-offset-4" rel="nofollow">Explore discovery engine</a>
+                </div>
+                <div class="lg:order-1 bg-gray-100 rounded-[2.5rem] h-[500px] w-full overflow-hidden relative group">
+                     <img src="https://images.unsplash.com/photo-1555992336-fb0d29498b13?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YW1lcmljYW4lMjBkaW5lcnxlbnwwfHwwfHx8MA%3D%3D" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Hidden Gem Diner">
+                     <!-- Abstract Pin UI -->
+                     <div class="absolute top-1/2 left-1/2 w-32 h-32 bg-moss/20 rounded-full flex items-center justify-center animate-pulse">
+                         <div class="w-4 h-4 bg-moss rounded-full border-2 border-white shadow-lg"></div>
+                     </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Personas -->
+    <section class="py-24 bg-charcoal text-white relative overflow-hidden">
+        <!-- Decoration -->
+        <div class="absolute top-0 right-0 w-96 h-96 bg-moss opacity-20 blur-[100px] rounded-full"></div>
+
+        <div class="max-w-7xl mx-auto px-6 relative z-10">
+            <div class="text-center mb-16">
+                <h2 class="font-display text-3xl md:text-5xl font-medium mb-4">Built for every kind of wanderer.</h2>
+                <p class="text-gray-400">Find your travel style.</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Persona 1 -->
+                <div class="bg-white/5 border border-white/10 p-6 rounded-2xl hover:bg-white/10 transition-colors cursor-default">
+                    <i class="ph-fill ph-user text-3xl text-ochre mb-4"></i>
+                    <h4 class="text-xl font-display font-medium mb-2">Solo Adventurers</h4>
+                    <p class="text-sm text-gray-400 leading-relaxed">Detailed safety info and single-diner friendly stops.</p>
+                </div>
+                 <!-- Persona 2 -->
+                 <div class="bg-white/5 border border-white/10 p-6 rounded-2xl hover:bg-white/10 transition-colors cursor-default">
+                    <i class="ph-fill ph-users-three text-3xl text-ochre mb-4"></i>
+                    <h4 class="text-xl font-display font-medium mb-2">Families</h4>
+                    <p class="text-sm text-gray-400 leading-relaxed">Bathroom break predictors and kid-friendly activity filters.</p>
+                </div>
+                 <!-- Persona 3 -->
+                 <div class="bg-white/5 border border-white/10 p-6 rounded-2xl hover:bg-white/10 transition-colors cursor-default">
+                    <i class="ph-fill ph-van text-3xl text-ochre mb-4"></i>
+                    <h4 class="text-xl font-display font-medium mb-2">RV Travelers</h4>
+                    <p class="text-sm text-gray-400 leading-relaxed">Elevation gradients, clearance warnings, and parking sizes.</p>
+                </div>
+                 <!-- Persona 4 -->
+                 <div class="bg-white/5 border border-white/10 p-6 rounded-2xl hover:bg-white/10 transition-colors cursor-default">
+                    <i class="ph-fill ph-globe-hemisphere-west text-3xl text-ochre mb-4"></i>
+                    <h4 class="text-xl font-display font-medium mb-2">Local Explorers</h4>
+                    <p class="text-sm text-gray-400 leading-relaxed">Deep cuts in your own backyard for weekend warriors.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="py-24 px-6 bg-sand" id="how-it-works">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-20">
+                 <h2 class="font-display text-4xl font-medium text-charcoal">From idea to ignition in minutes.</h2>
+            </div>
+
+            <div class="grid lg:grid-cols-4 gap-8 relative">
+                <!-- Connector Line (Desktop) -->
+                <div class="hidden lg:block absolute top-8 left-0 w-full h-0.5 bg-gray-300 -z-10"></div>
+
+                <!-- Step 1 -->
+                <div class="relative pt-8">
+                    <div class="w-16 h-16 bg-moss text-white rounded-full flex items-center justify-center text-xl font-bold border-4 border-sand mb-6 mx-auto lg:mx-0">1</div>
+                    <h4 class="font-display font-bold text-lg mb-2 text-center lg:text-left">Set Preferences</h4>
+                    <p class="text-gray-600 text-sm text-center lg:text-left">Define your pace, your interests, and your vehicle type.</p>
+                </div>
+                 <!-- Step 2 -->
+                 <div class="relative pt-8">
+                    <div class="w-16 h-16 bg-white text-moss rounded-full flex items-center justify-center text-xl font-bold border-4 border-sand mb-6 mx-auto lg:mx-0 shadow-sm">2</div>
+                    <h4 class="font-display font-bold text-lg mb-2 text-center lg:text-left">Build Route</h4>
+                    <p class="text-gray-600 text-sm text-center lg:text-left">Select endpoints. Watch AI generate the perfect wavy line.</p>
+                </div>
+                 <!-- Step 3 -->
+                 <div class="relative pt-8">
+                    <div class="w-16 h-16 bg-white text-moss rounded-full flex items-center justify-center text-xl font-bold border-4 border-sand mb-6 mx-auto lg:mx-0 shadow-sm">3</div>
+                    <h4 class="font-display font-bold text-lg mb-2 text-center lg:text-left">Fill the Gaps</h4>
+                    <p class="text-gray-600 text-sm text-center lg:text-left">Drag and drop recommended stops and hidden gems.</p>
+                </div>
+                 <!-- Step 4 -->
+                 <div class="relative pt-8">
+                    <div class="w-16 h-16 bg-white text-moss rounded-full flex items-center justify-center text-xl font-bold border-4 border-sand mb-6 mx-auto lg:mx-0 shadow-sm">4</div>
+                    <h4 class="font-display font-bold text-lg mb-2 text-center lg:text-left">Drive</h4>
+                    <p class="text-gray-600 text-sm text-center lg:text-left">Sync to offline mode and hit the gas.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section class="py-32 px-6 relative flex items-center justify-center">
+        <!-- Background Image with Overlay -->
+        <div class="absolute inset-0 z-0">
+             <img src="https://images.unsplash.com/photo-1470240731273-7821a6eeb6bd?ixlib=rb-4.0.3&auto=format&fit=crop&w=2074&q=80" class="w-full h-full object-cover grayscale brightness-[0.7] contrast-125" alt="Open Road">
+             <div class="absolute inset-0 bg-moss/60 mix-blend-multiply"></div>
+        </div>
+
+        <div class="relative z-10 text-center text-white max-w-2xl px-6 py-12 backdrop-blur-sm border border-white/10 rounded-3xl bg-white/5">
+            <h2 class="font-display text-4xl md:text-6xl font-medium mb-6">Your next road trip deserves better planning.</h2>
+            <p class="text-xl text-gray-200 mb-10">No credit card. No pressure. Just better trips.</p>
+            <button class="bg-white text-moss px-10 py-4 rounded-full font-bold text-lg hover:bg-sand transition-all transform hover:-translate-y-1 shadow-2xl">
+                Start Planning for Free
+            </button>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-charcoal text-white pt-20 pb-10 border-t border-white/10">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex flex-col md:flex-row justify-between items-start gap-12 mb-16">
+                <div>
+                    <div class="flex items-center gap-2 mb-6">
+                        <i class="ph-fill ph-map-trifold text-2xl text-white"></i>
+                        <span class="font-display font-semibold text-xl tracking-wide">RoadDoggs</span>
+                    </div>
+                    <p class="text-gray-400 text-sm max-w-xs">Built by travelers who were tired of screenshots and bad signal.</p>
+                </div>
+                
+                <div class="flex gap-16 text-sm text-gray-400">
+                    <div class="flex flex-col gap-4">
+                        <span class="text-white font-medium">Product</span>
+                        <a href="#" class="hover:text-ochre" rel="nofollow">Features</a>
+                        <a href="#" class="hover:text-ochre" rel="nofollow">Pricing</a>
+                        <a href="#" class="hover:text-ochre" rel="nofollow">Download</a>
+                    </div>
+                    <div class="flex flex-col gap-4">
+                        <span class="text-white font-medium">Support</span>
+                        <a href="#" class="hover:text-ochre" rel="nofollow">Help Center</a>
+                        <a href="#" class="hover:text-ochre" rel="nofollow">Privacy</a>
+                        <a href="#" class="hover:text-ochre" rel="nofollow">Terms</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500">
+                <p>&copy; 2024 RoadDoggs Inc. All rights reserved.</p>
+                <div class="flex gap-4 mt-4 md:mt-0">
+                    <i class="ph-fill ph-instagram-logo text-lg hover:text-white cursor-pointer"></i>
+                    <i class="ph-fill ph-twitter-logo text-lg hover:text-white cursor-pointer"></i>
+                    <i class="ph-fill ph-tiktok-logo text-lg hover:text-white cursor-pointer"></i>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Intersection Observer Script for Reveal Animations -->
+    <script>
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.reveal').forEach((el) => {
+            observer.observe(el);
+        });
+
+        // Navbar scroll effect
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                nav.classList.add('py-2');
+                nav.classList.remove('py-6');
+            } else {
+                nav.classList.add('py-6');
+                nav.classList.remove('py-2');
+            }
+        });
+    </script>
+</body>
+</html>

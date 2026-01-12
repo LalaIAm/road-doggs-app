@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to RoadDoggs — Setup Your Profile</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'moss': '#2C4A3B',
+                        'moss-light': '#3E614F',
+                        'sand': '#F4F2EE',
+                        'sand-dark': '#E6E2DA',
+                        'charcoal': '#1A1A1A',
+                        'ochre': '#C27835',
+                        'ochre-light': '#D98F4F',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'soft': '0 20px 40px -15px rgba(44, 74, 59, 0.1)',
+                        'inner-light': 'inset 0 2px 4px 0 rgba(255, 255, 255, 0.3)',
+                    },
+                    transitionProperty: {
+                        'width': 'width',
+                        'height': 'height',
+                        'spacing': 'margin, padding',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #F4F2EE;
+            color: #1A1A1A;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        /* Transition Classes */
+        .step-container {
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .step-container.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .step-container.exiting-left {
+            opacity: 0;
+            transform: translateX(-40px);
+        }
+        
+        /* Custom Selection Chip Styles */
+        .select-chip:checked + label {
+            background-color: #2C4A3B;
+            color: white;
+            border-color: #2C4A3B;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(44, 74, 59, 0.2);
+        }
+        .select-chip:checked + label i {
+            color: #C27835; /* Ochre Icon */
+        }
+        
+        /* Interest Chip Styles (Subtler) */
+        .interest-chip:checked + label {
+            background-color: #E6E2DA; /* Dark Sand */
+            border-color: #2C4A3B;
+            color: #1A1A1A;
+            font-weight: 600;
+        }
+        .interest-chip:checked + label i {
+             color: #2C4A3B;
+        }
+
+        /* Range Slider Styling */
+        input[type=range] {
+            -webkit-appearance: none; 
+            background: transparent; 
+        }
+        
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 24px;
+            width: 24px;
+            border-radius: 50%;
+            background: #2C4A3B;
+            cursor: pointer;
+            margin-top: -10px; 
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            border: 2px solid white;
+        }
+        
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #D1D5DB;
+            border-radius: 2px;
+        }
+        
+        /* RV Expansion Animation */
+        .rv-options {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-out, opacity 0.4s ease-out;
+            opacity: 0;
+        }
+        .rv-options.visible {
+            max-height: 300px;
+            opacity: 1;
+        }
+        
+        /* Background decorative map lines */
+        .bg-map-pattern {
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%236b7280' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+    </style>
+</head>
+<body class="bg-map-pattern min-h-screen flex flex-col items-center justify-between py-6">
+
+    <!-- Header -->
+    <header class="w-full max-w-2xl px-6 flex items-center justify-between mb-8 z-10">
+        <div class="flex items-center gap-2">
+            <i class="ph-fill ph-map-trifold text-2xl text-moss"></i>
+            <span class="font-display font-semibold text-lg text-charcoal">RoadDoggs</span>
+        </div>
+        
+        <!-- Interactive Progress Bar -->
+        <div class="hidden md:flex flex-1 mx-12 items-center gap-2" id="progress-container">
+            <div class="h-1.5 flex-1 bg-gray-200 rounded-full overflow-hidden">
+                <div id="progress-bar" class="h-full bg-moss w-[0%] transition-all duration-500 ease-out"></div>
+            </div>
+            <span id="step-indicator" class="text-xs font-medium text-gray-500 w-16 text-right">Step 0 of 6</span>
+        </div>
+
+        <button onclick="skipOnboarding()" id="skip-btn" class="text-sm font-medium text-gray-500 hover:text-moss transition-colors opacity-0 pointer-events-none">
+            Skip for now
+        </button>
+    </header>
+
+    <!-- Main Content Wizard -->
+    <main class="w-full flex-1 flex flex-col justify-center max-w-2xl px-6 relative z-10">
+        
+        <!-- Step 1: Welcome -->
+        <div id="step-1" class="step-container active">
+            <div class="bg-white rounded-[2.5rem] p-8 md:p-12 shadow-soft border border-gray-100 text-center relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-64 h-64 bg-yellow-50 rounded-full blur-3xl -z-10 opacity-60 transform translate-x-12 -translate-y-12"></div>
+                
+                <div class="w-16 h-16 bg-moss/10 rounded-full flex items-center justify-center mx-auto mb-6 text-moss text-2xl animate-pulse">
+                    <i class="ph-fill ph-hand-waving"></i>
+                </div>
+                
+                <h1 class="font-display text-4xl font-semibold text-charcoal mb-4">Let's plan trips that <span class="italic text-ochre font-serif">actually</span> fit you.</h1>
+                <p class="text-gray-600 text-lg mb-8 leading-relaxed max-w-md mx-auto">
+                    A few quick questions help us tailor routes, stops, and recommendations to your travel style. You can change any of this later.
+                </p>
+                
+                <div class="flex flex-col items-center gap-4">
+                    <button onclick="nextStep()" class="w-full md:w-auto bg-moss text-white px-10 py-4 rounded-full font-medium hover:bg-moss-light transition-all transform hover:scale-105 shadow-xl shadow-moss/20 flex items-center justify-center gap-2">
+                        Get Started <i class="ph-bold ph-arrow-right"></i>
+                    </button>
+                    <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-1">
+                        <i class="ph ph-clock"></i> Takes about 2 minutes
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: Travel Style -->
+        <div id="step-2" class="step-container">
+            <div class="bg-white rounded-[2.5rem] p-8 paper-shadow border border-white/50 backdrop-blur-sm">
+                <div class="mb-8">
+                    <h2 class="font-display text-2xl font-semibold text-charcoal mb-2">How do you like to travel?</h2>
+                    <p class="text-sm text-gray-500">Choose what feels right, not what you think you should pick.</p>
+                </div>
+
+                <div class="space-y-6">
+                    <!-- Vibe Section -->
+                    <div>
+                        <span class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 block">Route Vibe</span>
+                        <div class="grid md:grid-cols-3 gap-3">
+                            <!-- Option 1 -->
+                            <div class="relative">
+                                <input type="radio" name="vibe" id="vibe-scenic" class="select-chip absolute opacity-0 w-full h-full cursor-pointer">
+                                <label for="vibe-scenic" class="flex flex-col items-center justify-center gap-2 p-4 border border-gray-200 rounded-2xl cursor-pointer transition-all hover:border-moss/50 bg-white h-32">
+                                    <i class="ph-fill ph-mountains text-2xl text-gray-400 transition-colors"></i>
+                                    <span class="font-medium text-sm">Scenic & Slow</span>
+                                </label>
+                            </div>
+                            <!-- Option 2 -->
+                            <div class="relative">
+                                <input type="radio" name="vibe" id="vibe-efficient" class="select-chip absolute opacity-0 w-full h-full cursor-pointer">
+                                <label for="vibe-efficient" class="flex flex-col items-center justify-center gap-2 p-4 border border-gray-200 rounded-2xl cursor-pointer transition-all hover:border-moss/50 bg-white h-32">
+                                    <i class="ph-fill ph-lightning text-2xl text-gray-400 transition-colors"></i>
+                                    <span class="font-medium text-sm">Efficient</span>
+                                </label>
+                            </div>
+                            <!-- Option 3 -->
+                            <div class="relative">
+                                <input type="radio" name="vibe" id="vibe-balanced" class="select-chip absolute opacity-0 w-full h-full cursor-pointer" checked>
+                                <label for="vibe-balanced" class="flex flex-col items-center justify-center gap-2 p-4 border border-gray-200 rounded-2xl cursor-pointer transition-all hover:border-moss/50 bg-white h-32">
+                                    <i class="ph-fill ph-scales text-2xl text-gray-400 transition-colors"></i>
+                                    <span class="font-medium text-sm">Balanced</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pace Section -->
+                    <div>
+                        <span class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 block">Daily Pace</span>
+                        <div class="flex gap-4 p-1 bg-gray-100/50 rounded-xl overflow-x-auto no-scrollbar">
+                            <label class="flex-1 cursor-pointer">
+                                <input type="radio" name="pace" class="peer sr-only">
+                                <div class="px-4 py-3 rounded-lg text-center text-sm font-medium text-gray-500 peer-checked:bg-white peer-checked:text-moss peer-checked:shadow-sm transition-all border border-transparent peer-checked:border-gray-200">Relaxed</div>
+                            </label>
+                            <label class="flex-1 cursor-pointer">
+                                <input type="radio" name="pace" class="peer sr-only" checked>
+                                <div class="px-4 py-3 rounded-lg text-center text-sm font-medium text-gray-500 peer-checked:bg-white peer-checked:text-moss peer-checked:shadow-sm transition-all border border-transparent peer-checked:border-gray-200">Moderate</div>
+                            </label>
+                            <label class="flex-1 cursor-pointer">
+                                <input type="radio" name="pace" class="peer sr-only">
+                                <div class="px-4 py-3 rounded-lg text-center text-sm font-medium text-gray-500 peer-checked:bg-white peer-checked:text-moss peer-checked:shadow-sm transition-all border border-transparent peer-checked:border-gray-200">Packed</div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3: Interests -->
+        <div id="step-3" class="step-container">
+            <div class="bg-white rounded-[2.5rem] p-8 shadow-soft">
+                <div class="mb-8">
+                    <h2 class="font-display text-2xl font-semibold text-charcoal mb-2">What sparks your interest?</h2>
+                    <p class="text-sm text-gray-500">We use this to find hidden gems along your route.</p>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-[400px] overflow-y-auto pr-2 custom-scroll">
+                    <!-- Interest Item -->
+                    <div class="relative">
+                        <input type="checkbox" id="int-nature" class="interest-chip absolute opacity-0 w-full h-full cursor-pointer" checked>
+                        <label for="int-nature" class="flex items-center gap-3 p-3 border border-gray-200 rounded-xl cursor-pointer transition-all hover:bg-gray-50 text-gray-600 bg-white">
+                            <i class="ph-fill ph-tree text-lg text-gray-400"></i>
+                            <span class="text-sm">Nature</span>
+                        </label>
+                    </div>
+                    
+                    <div class="relative">
+                        <input type="checkbox" id="int-food" class="interest-chip absolute opacity-0 w-full h-full cursor-pointer" checked>
+                        <label for="int-food" class="flex items-center gap-3 p-3 border border-gray-200 rounded-xl cursor-pointer transition-all hover:bg-gray-50 text-gray-600 bg-white">
+                            <i class="ph-fill ph-bowl-food text-lg text-gray-400"></i>
+                            <span class="text-sm">Local Food</span>
+                        </label>
+                    </div>
+
+                    <div class="relative">
+                        <input type="checkbox" id="int-history" class="interest-chip absolute opacity-0 w-full h-full cursor-pointer">
+                        <label for="int-history" class="flex items-center gap-3 p-3 border border-gray-200 rounded-xl cursor-pointer transition-all hover:bg-gray-50 text-gray-600 bg-white">
+                            <i class="ph-fill ph-columns text-lg text-gray-400"></i>
+                            <span class="text-sm">History</span>
+                        </label>
+                    </div>
+
+                    <div class="relative">
+                        <input type="checkbox" id="int-photo" class="interest-chip absolute opacity-0 w-full h-full cursor-pointer">
+                        <label for="int-photo" class="flex items-center gap-3 p-3 border border-gray-200 rounded-xl cursor-pointer transition-all hover:bg-gray-50 text-gray-600 bg-white">
+                            <i class="ph-fill ph-camera text-lg text-gray-400"></i>
+                            <span class="text-sm">Photography</span>
+                        </label>
+                    </div>
+                    
+                    <div class="relative">
+                        <input type="checkbox" id="int-shop" class="interest-chip absolute opacity-0 w-full h-full cursor-pointer">
+                        <label for="int-shop" class="flex items-center gap-3 p-3 border border-gray-200 rounded-xl cursor-pointer transition-all hover:bg-gray-50 text-gray-600 bg-white">
+                            <i class="ph-fill ph-shopping-bag text-lg text-gray-400"></i>
+                            <span class="text-sm">Shopping</span>
+                        </label>
+                    </div>
+
+                    <div class="relative">
+                        <input type="checkbox" id="int-coffee" class="interest-chip absolute opacity-0 w-full h-full cursor-pointer" checked>
+                        <label for="int-coffee" class="flex items-center gap-3 p-3 border border-gray-200 rounded-xl cursor-pointer transition-all hover:bg-gray-50 text-gray-600 bg-white">
+                            <i class="ph-fill ph-coffee text-lg text-gray-400"></i>
+                            <span class="text-sm">Coffee</span>
+                        </label>
+                    </div>
+
+                     <div class="relative">
+                        <input type="checkbox" id="int-museum" class="interest-chip absolute opacity-0 w-full h-full cursor-pointer">
+                        <label for="int-museum" class="flex items-center gap-3 p-3 border border-gray-200 rounded-xl cursor-pointer transition-all hover:bg-gray-50 text-gray-600 bg-white">
+                            <i class="ph-fill ph-bank text-lg text-gray-400"></i>
+                            <span class="text-sm">Museums</span>
+                        </label>
+                    </div>
+                     <div class="relative">
+                        <input type="checkbox" id="int-art" class="interest-chip absolute opacity-0 w-full h-full cursor-pointer">
+                        <label for="int-art" class="flex items-center gap-3 p-3 border border-gray-200 rounded-xl cursor-pointer transition-all hover:bg-gray-50 text-gray-600 bg-white">
+                            <i class="ph-fill ph-paint-brush text-lg text-gray-400"></i>
+                            <span class="text-sm">Art</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 4: Practical Constraints -->
+        <div id="step-4" class="step-container">
+            <div class="bg-white rounded-[2.5rem] p-8 shadow-soft">
+                <div class="mb-8">
+                    <h2 class="font-display text-2xl font-semibold text-charcoal mb-2">Practical Details</h2>
+                    <p class="text-sm text-gray-500">So we don't send your RV under a low bridge.</p>
+                </div>
+
+                <div class="space-y-8">
+                    <!-- Vehicle Type -->
+                    <div>
+                         <span class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 block">Primary Vehicle</span>
+                         <div class="flex gap-4">
+                             <button onclick="setVehicle('car')" id="btn-car" class="flex-1 py-3 border-2 border-moss bg-moss/5 text-moss rounded-xl font-medium transition-all">Car</button>
+                             <button onclick="setVehicle('ev')" id="btn-ev" class="flex-1 py-3 border-2 border-transparent bg-gray-50 text-gray-500 rounded-xl font-medium hover:bg-gray-100 transition-all">EV</button>
+                             <button onclick="setVehicle('rv')" id="btn-rv" class="flex-1 py-3 border-2 border-transparent bg-gray-50 text-gray-500 rounded-xl font-medium hover:bg-gray-100 transition-all">RV/Tow</button>
+                         </div>
+                    </div>
+
+                    <!-- Conditional RV Fields -->
+                    <div id="rv-fields" class="rv-options bg-gray-50 -mx-2 px-2 rounded-xl">
+                        <div class="p-4 space-y-4">
+                            <div>
+                                <label class="text-xs font-semibold text-gray-500 mb-1 block">Height Clearance</label>
+                                <select class="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-sm">
+                                    <option>Under 8'</option>
+                                    <option>8' - 10'</option>
+                                    <option>10' - 12'</option>
+                                    <option>Over 12'</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs font-semibold text-gray-500 mb-1 block">Total Length</label>
+                                <select class="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-sm">
+                                    <option>Under 20'</option>
+                                    <option>20' - 30'</option>
+                                    <option>Over 30'</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Budget Slider -->
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Budget Comfort</span>
+                            <span class="text-xs font-medium text-moss" id="budget-label">Mid-Range</span>
+                        </div>
+                        <input type="range" min="1" max="3" value="2" class="w-full" oninput="updateBudget(this.value)">
+                        <div class="flex justify-between mt-2 text-[10px] text-gray-400 font-medium uppercase">
+                            <span>Thrifty</span>
+                            <span>Balanced</span>
+                            <span>Splurge</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 5: Collaboration -->
+        <div id="step-5" class="step-container">
+            <div class="bg-white rounded-[2.5rem] p-8 shadow-soft">
+                <div class="mb-8">
+                    <h2 class="font-display text-2xl font-semibold text-charcoal mb-2">Who are you traveling with?</h2>
+                    <p class="text-sm text-gray-500">We'll set up the right collaborative workspace.</p>
+                </div>
+
+                <div class="space-y-4">
+                    <label class="group flex items-center justify-between p-5 border border-gray-200 rounded-2xl cursor-pointer hover:border-moss transition-all hover:bg-sand/30">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 group-hover:bg-moss group-hover:text-white transition-colors">
+                                <i class="ph-fill ph-user"></i>
+                            </div>
+                            <span class="font-medium text-charcoal">Just me</span>
+                        </div>
+                        <input type="radio" name="collab" class="w-5 h-5 accent-moss">
+                    </label>
+
+                    <label class="group flex items-center justify-between p-5 border border-gray-200 rounded-2xl cursor-pointer hover:border-moss transition-all hover:bg-sand/30">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 group-hover:bg-moss group-hover:text-white transition-colors">
+                                <i class="ph-fill ph-users-three"></i>
+                            </div>
+                            <span class="font-medium text-charcoal">Friends / Group</span>
+                        </div>
+                        <input type="radio" name="collab" class="w-5 h-5 accent-moss">
+                    </label>
+
+                    <label class="group flex items-center justify-between p-5 border border-gray-200 rounded-2xl cursor-pointer hover:border-moss transition-all hover:bg-sand/30">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 group-hover:bg-moss group-hover:text-white transition-colors">
+                                <i class="ph-fill ph-baby"></i>
+                            </div>
+                            <span class="font-medium text-charcoal">Family</span>
+                        </div>
+                        <input type="radio" name="collab" class="w-5 h-5 accent-moss">
+                    </label>
+                </div>
+                
+                <div class="mt-8 pt-6 border-t border-gray-100">
+                    <div class="flex items-center gap-3">
+                        <input type="checkbox" id="organizer" class="w-5 h-5 accent-moss rounded">
+                        <label for="organizer" class="text-sm text-gray-600 font-medium">I'm usually the main planner</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 6: AI Magic (Optional) -->
+        <div id="step-6" class="step-container">
+            <div class="bg-white rounded-[2.5rem] p-8 shadow-soft">
+                <div class="mb-6">
+                    <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-ochre/10 text-ochre text-xs font-bold uppercase tracking-wide mb-4">
+                        <i class="ph-fill ph-sparkle"></i> Optional
+                    </div>
+                    <h2 class="font-display text-2xl font-semibold text-charcoal mb-2">Anything else we should know?</h2>
+                    <p class="text-sm text-gray-500">Tell the AI specific things you love or hate.</p>
+                </div>
+
+                <div class="relative group">
+                    <div class="absolute -inset-0.5 bg-gradient-to-r from-green-300 to-amber-300 rounded-2xl opacity-20 blur transition duration-1000 group-hover:opacity-60 group-hover:duration-200"></div>
+                    <div class="relative bg-white rounded-xl">
+                        <textarea placeholder="e.g. 'I love scenic backroads, hate crowds, and need good coffee stops every 2 hours.'" 
+                              class="w-full h-40 p-5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-moss/20 resize-none font-sans text-gray-700 leading-relaxed"></textarea>
+                    </div>
+                </div>
+                
+                <div class="mt-4 flex gap-2 overflow-x-auto no-scrollbar pb-2">
+                    <span class="text-xs bg-gray-100 text-gray-500 px-3 py-1.5 rounded-full cursor-pointer hover:bg-moss/10 hover:text-moss transition-colors">"Avoid toll roads"</span>
+                    <span class="text-xs bg-gray-100 text-gray-500 px-3 py-1.5 rounded-full cursor-pointer hover:bg-moss/10 hover:text-moss transition-colors">"Dog friendly everywhere"</span>
+                    <span class="text-xs bg-gray-100 text-gray-500 px-3 py-1.5 rounded-full cursor-pointer hover:bg-moss/10 hover:text-moss transition-colors">"Late riser"</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 7: Completion -->
+        <div id="step-7" class="step-container">
+            <div class="text-center p-8 max-w-md mx-auto">
+                <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-8 animate-bounce">
+                    <i class="ph-bold ph-check text-4xl"></i>
+                </div>
+                
+                <h2 class="font-display text-4xl font-semibold text-charcoal mb-4">You're all set.</h2>
+                <p class="text-gray-600 mb-10 leading-relaxed">
+                    We've customized the map engine to match your style. <br>Your adventure begins now.
+                </p>
+                
+                <button class="w-full bg-moss text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-moss-light transition-all shadow-xl shadow-moss/20 flex items-center justify-center gap-2">
+                    Plan My First Trip <i class="ph-bold ph-arrow-right"></i>
+                </button>
+                
+                <button class="mt-6 text-sm font-medium text-gray-500 hover:text-moss underline decoration-transparent hover:decoration-moss transition-all">
+                    I want to edit my preferences first
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer Controls -->
+    <footer class="w-full max-w-2xl px-6 pb-6 pt-4 flex justify-between items-center z-10" id="controls">
+        <button onclick="prevStep()" id="prev-btn" class="px-6 py-3 rounded-xl text-gray-500 font-medium hover:bg-white/50 transition-colors invisible flex items-center gap-2">
+            <i class="ph-bold ph-arrow-left"></i> Back
+        </button>
+        
+        <button onclick="nextStep()" id="next-btn" class="bg-charcoal text-white px-8 py-3.5 rounded-full font-medium hover:bg-black transition-all shadow-md flex items-center gap-2 invisible">
+            Continue <i class="ph-bold ph-arrow-right"></i>
+        </button>
+    </footer>
+
+    <!-- Logic Script -->
+    <script>
+        let currentStep = 1;
+        const totalSteps = 7;
+
+        function updateUI() {
+            // Update Headers & Buttons
+            const progressContainer = document.getElementById('progress-container');
+            const skipBtn = document.getElementById('skip-btn');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const progressBar = document.getElementById('progress-bar');
+            const stepInd = document.getElementById('step-indicator');
+
+            // Toggle element visibility based on step
+            if(currentStep === 1 || currentStep === totalSteps) {
+                progressContainer.classList.add('opacity-0');
+                skipBtn.classList.add('opacity-0', 'pointer-events-none');
+                prevBtn.classList.add('invisible');
+                nextBtn.classList.add('invisible'); // Let specific step buttons handle it
+            } else {
+                progressContainer.classList.remove('opacity-0');
+                skipBtn.classList.remove('opacity-0', 'pointer-events-none');
+                prevBtn.classList.remove('invisible');
+                nextBtn.classList.remove('invisible');
+            }
+
+            // Progress Bar Math (Steps 2-6)
+            if(currentStep > 1 && currentStep < totalSteps) {
+                const percentage = ((currentStep - 2) / (totalSteps - 3)) * 100;
+                progressBar.style.width = `${percentage}%`;
+                stepInd.innerText = `Step ${currentStep - 1} of ${totalSteps - 2}`;
+                
+                // Change Button Text for last input step
+                if(currentStep === 6) {
+                    nextBtn.innerHTML = 'Finish Setup <i class="ph-bold ph-check"></i>';
+                } else {
+                    nextBtn.innerHTML = 'Continue <i class="ph-bold ph-arrow-right"></i>';
+                }
+            }
+        }
+
+        function showStep(step) {
+            // Hide all current
+            document.querySelectorAll('.step-container').forEach(el => {
+                if(el.id === `step-${currentStep}`) {
+                     el.classList.add('exiting-left');
+                     el.classList.remove('active');
+                     setTimeout(() => {
+                         el.classList.remove('exiting-left'); 
+                         el.style.display = 'none'; // Ensure it's gone from flow
+                     }, 400);
+                } else {
+                    el.classList.remove('active', 'exiting-left');
+                    el.style.display = 'none';
+                }
+            });
+
+            // Show new
+            const newStepEl = document.getElementById(`step-${step}`);
+            newStepEl.style.display = 'block';
+            
+            // Small timemout to allow display:block to render before adding opacity class
+            setTimeout(() => {
+                newStepEl.classList.add('active');
+            }, 50);
+
+            currentStep = step;
+            updateUI();
+        }
+
+        function nextStep() {
+            if (currentStep < totalSteps) {
+                showStep(currentStep + 1);
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 1) {
+                // Reverse animation logic hack for simplicity:
+                // We just rely on standard transition but logic remains same
+                currentStep--; 
+                
+                // Quick reset for animation flow
+                document.querySelectorAll('.step-container').forEach(el => {
+                     el.classList.remove('active', 'exiting-left');
+                     el.style.display = 'none';
+                });
+                
+                const newStepEl = document.getElementById(`step-${currentStep}`);
+                newStepEl.style.display = 'block';
+                 setTimeout(() => {
+                    newStepEl.classList.add('active');
+                }, 50);
+
+                updateUI();
+            }
+        }
+        
+        function skipOnboarding() {
+            if(confirm("Are you sure? We can't customize your route without these details.")) {
+               showStep(totalSteps); 
+            }
+        }
+
+        // Feature Specific Logic
+        function setVehicle(type) {
+            // Reset Styles
+            ['car', 'ev', 'rv'].forEach(v => {
+                const btn = document.getElementById(`btn-${v}`);
+                btn.classList.remove('border-moss', 'bg-moss/5', 'text-moss');
+                btn.classList.add('border-transparent', 'bg-gray-50', 'text-gray-500');
+            });
+
+            // Set Active
+            const activeBtn = document.getElementById(`btn-${type}`);
+            activeBtn.classList.remove('border-transparent', 'bg-gray-50', 'text-gray-500');
+            activeBtn.classList.add('border-moss', 'bg-moss/5', 'text-moss');
+
+            // Show Rules
+            const rvFields = document.getElementById('rv-fields');
+            if(type === 'rv') {
+                rvFields.classList.add('visible');
+            } else {
+                rvFields.classList.remove('visible');
+            }
+        }
+
+        function updateBudget(val) {
+            const label = document.getElementById('budget-label');
+            if(val == 1) label.innerText = "Thrifty";
+            if(val == 2) label.innerText = "Balanced";
+            if(val == 3) label.innerText = "Splurge";
+        }
+
+        // Initialize
+        updateUI();
+
+    </script>
+</body>
+</html>

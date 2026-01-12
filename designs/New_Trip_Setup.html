@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Trip — RoadDoggs</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'moss': '#2C4A3B',
+                        'moss-light': '#3E614F',
+                        'sand': '#F4F2EE',
+                        'sand-dark': '#E6E2DA',
+                        'charcoal': '#1A1A1A',
+                        'ochre': '#C27835',
+                        'white': '#FFFFFF',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'soft': '0 20px 40px -10px rgba(44, 74, 59, 0.08)',
+                        'inner-border': 'inset 0 0 0 1px #E5E7EB',
+                    },
+                    transitionProperty: {
+                        'height': 'height',
+                        'spacing': 'margin, padding',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #F4F2EE;
+            color: #1A1A1A;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Input Styles */
+        .input-base {
+            transition: all 0.2s ease-out;
+        }
+        .input-base:focus {
+            border-color: #2C4A3B;
+            box-shadow: 0 0 0 4px rgba(44, 74, 59, 0.1);
+        }
+
+        /* Checkbox/Radio Custom Styling */
+        .mode-radio:checked + label {
+            background-color: #2C4A3B;
+            color: white;
+            border-color: #2C4A3B;
+        }
+        .mode-radio:checked + label .icon-box {
+            background-color: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        /* Progressive Disclosure Animation */
+        .slide-down {
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transition: max-height 0.4s cubic-bezier(0, 1, 0, 1), opacity 0.4s ease-out, margin 0.3s ease;
+        }
+        .slide-down.open {
+            max-height: 400px;
+            opacity: 1;
+            margin-top: 1rem;
+            transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in, margin 0.3s ease;
+        }
+
+        /* Tag Selection */
+        .tag-check:checked + label {
+            background-color: #E6E2DA; /* Darker Sand */
+            border-color: #2C4A3B;
+            color: #1A1A1A;
+            font-weight: 600;
+        }
+
+        /* Loading Screen Animation */
+        @keyframes map-path {
+            0% { stroke-dashoffset: 1000; }
+            100% { stroke-dashoffset: 0; }
+        }
+        .animate-path {
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: map-path 3s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center pt-28 pb-12 px-4 md:px-6">
+
+    <!-- Simple Header -->
+    <header class="fixed top-0 left-0 w-full px-6 py-4 flex justify-between items-center z-50 bg-[#F4F2EE]/90 backdrop-blur-md border-b border-gray-200/50">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-moss">
+                <i class="ph-fill ph-map-trifold text-xl"></i>
+            </div>
+            <div class="flex flex-col">
+                <h1 class="font-display font-bold text-lg text-charcoal leading-tight">Create Trip</h1>
+                <span class="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">RoadDoggs Planner</span>
+            </div>
+        </div>
+        <button onclick="window.location.href='#'" class="w-10 h-10 rounded-full hover:bg-black/5 flex items-center justify-center text-charcoal transition-colors" aria-label="Close">
+            <i class="ph-bold ph-x"></i>
+        </button>
+    </header>
+
+    <!-- Main Content -->
+    <main class="w-full max-w-2xl relative z-10 w-full animate-fade-in-up">
+        
+        <form id="trip-form" onsubmit="handleBuild(event)">
+            <!-- Main Card -->
+            <div class="bg-white rounded-[2rem] shadow-soft border border-gray-100 overflow-hidden relative">
+                
+                <!-- Card Header -->
+                <div class="p-8 md:p-10 border-b border-gray-100 bg-white">
+                    <h1 class="font-display text-3xl md:text-4xl font-semibold text-charcoal mb-2">Create a New Trip</h1>
+                    <p class="text-gray-500 text-lg">Just the essentials — you’ll refine everything next.</p>
+                </div>
+
+                <!-- Scrollable Content Area -->
+                <div class="p-8 md:p-10 space-y-12">
+
+                    <!-- SECTION 1: IDENTITY -->
+                    <section class="space-y-6">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Trip Identity</label>
+                            <input type="text" placeholder="e.g. Spring Southwest Road Trip" 
+                                   class="input-base w-full text-2xl font-display font-medium placeholder-gray-300 border-none border-b-2 border-gray-200 focus:border-moss rounded-none px-0 py-2 bg-transparent outline-none">
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-6">
+                            <div class="relative">
+                                <label class="block text-sm font-semibold text-gray-600 mb-2">Start Date</label>
+                                <div class="relative">
+                                    <input type="date" class="input-base w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-charcoal focus:outline-none cursor-pointer">
+                                </div>
+                            </div>
+                            <div class="relative">
+                                <label class="block text-sm font-semibold text-gray-600 mb-2">End Date</label>
+                                <div class="relative">
+                                    <input type="date" class="input-base w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-charcoal focus:outline-none cursor-pointer">
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-400 flex items-center gap-1">
+                            <i class="ph-fill ph-info"></i> Dates help us estimate pacing and weather.
+                        </p>
+                    </section>
+
+                    <hr class="border-gray-100">
+
+                    <!-- SECTION 2: VEHICLE -->
+                    <section>
+                        <div class="flex justify-between items-center mb-4">
+                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider">Travel Mode</label>
+                            <span class="text-xs text-ochre font-medium bg-ochre/10 px-2 py-0.5 rounded">New! RV Routing</span>
+                        </div>
+                        
+                        <!-- Mode Selector -->
+                        <div class="grid grid-cols-3 gap-4">
+                            <!-- Car -->
+                            <div>
+                                <input type="radio" name="vehicle" id="v-car" class="mode-radio hidden" checked onchange="toggleVehicleDetails('car')">
+                                <label for="v-car" class="flex flex-col items-center justify-center p-4 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-50 transition-all h-28 group">
+                                    <div class="icon-box w-10 h-10 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                                        <i class="ph-fill ph-car text-xl"></i>
+                                    </div>
+                                    <span class="font-medium text-sm">Car</span>
+                                </label>
+                            </div>
+                            
+                            <!-- EV -->
+                            <div>
+                                <input type="radio" name="vehicle" id="v-ev" class="mode-radio hidden" onchange="toggleVehicleDetails('ev')">
+                                <label for="v-ev" class="flex flex-col items-center justify-center p-4 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-50 transition-all h-28 group">
+                                    <div class="icon-box w-10 h-10 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                                        <i class="ph-fill ph-lightning text-xl"></i>
+                                    </div>
+                                    <span class="font-medium text-sm">EV</span>
+                                </label>
+                            </div>
+                            
+                            <!-- RV -->
+                            <div>
+                                <input type="radio" name="vehicle" id="v-rv" class="mode-radio hidden" onchange="toggleVehicleDetails('rv')">
+                                <label for="v-rv" class="flex flex-col items-center justify-center p-4 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-50 transition-all h-28 group">
+                                    <div class="icon-box w-10 h-10 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                                        <i class="ph-fill ph-van text-xl"></i>
+                                    </div>
+                                    <span class="font-medium text-sm">RV / Tow</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Expanded Fields: EV -->
+                        <div id="details-ev" class="slide-down bg-gray-50 rounded-xl border border-gray-100 p-6">
+                            <h4 class="text-sm font-bold text-gray-700 mb-4 flex items-center gap-2"><i class="ph-fill ph-charging-station text-moss"></i> Charging Preferences</h4>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="text-xs font-semibold text-gray-500 block mb-1">Max Range (approx)</label>
+                                    <div class="flex items-center gap-4">
+                                        <input type="range" class="w-full accent-moss h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" min="100" max="400" value="250">
+                                        <span class="text-sm font-medium bg-white px-3 py-1 rounded border border-gray-200 whitespace-nowrap">250 mi</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Expanded Fields: RV -->
+                        <div id="details-rv" class="slide-down bg-gray-50 rounded-xl border border-gray-100 p-6">
+                            <h4 class="text-sm font-bold text-gray-700 mb-4 flex items-center gap-2"><i class="ph-fill ph-ruler text-moss"></i> Vehicle Dimensions</h4>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="text-xs font-semibold text-gray-500 block mb-1">Height</label>
+                                    <select class="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-sm outline-none focus:border-moss">
+                                        <option>Select...</option>
+                                        <option>Under 9'</option>
+                                        <option>9' - 11'</option>
+                                        <option>11' - 13'6"</option>
+                                        <option>Over 13'6"</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-xs font-semibold text-gray-500 block mb-1">Length</label>
+                                    <select class="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-sm outline-none focus:border-moss">
+                                        <option>Select...</option>
+                                        <option>Under 20'</option>
+                                        <option>20' - 30'</option>
+                                        <option>30' - 40'</option>
+                                        <option>40'+</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <hr class="border-gray-100">
+
+                    <!-- SECTION 3: ROUTE BASICS -->
+                    <section class="space-y-4">
+                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Route Basics</label>
+                        
+                        <!-- Start -->
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <div class="w-2.5 h-2.5 rounded-full border-[3px] border-ochre bg-white"></div>
+                            </div>
+                            <input type="text" id="start-loc" class="input-base block w-full pl-10 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-xl text-charcoal outline-none placeholder-gray-400 font-medium" placeholder="Where are you starting?">
+                            <!-- Visual line connector -->
+                            <div class="absolute left-[1.05rem] top-10 bottom-[-20px] w-0.5 bg-gray-200 -z-10 group-focus-within:bg-moss/20"></div>
+                        </div>
+
+                        <!-- Stop (Initially Hidden logic could go here, but keeping it simple) -->
+
+                        <!-- Dest -->
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="ph-fill ph-map-pin text-moss text-lg"></i>
+                            </div>
+                            <input type="text" id="end-loc" class="input-base block w-full pl-10 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-xl text-charcoal outline-none placeholder-gray-400 font-medium" placeholder="Where are you headed?">
+                        </div>
+
+                        <button type="button" class="text-sm font-medium text-moss hover:text-moss-light flex items-center gap-1 pl-1 transition-colors">
+                            <i class="ph-bold ph-plus"></i> Add a stop
+                        </button>
+                    </section>
+
+                    <hr class="border-gray-100">
+
+                    <!-- SECTION 4: CONTEXT -->
+                    <section class="space-y-4">
+                        <div class="flex justify-between items-end">
+                             <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider">Help the AI Focus</label>
+                             <span class="text-xs text-gray-400">Optional</span>
+                        </div>
+                        
+                        <div class="flex flex-wrap gap-3">
+                            <div>
+                                <input type="checkbox" id="tag-leisure" class="tag-check hidden">
+                                <label for="tag-leisure" class="inline-block px-4 py-2 border border-gray-200 rounded-full text-sm text-gray-600 cursor-pointer hover:bg-gray-50 transition-all select-none">
+                                    🏖️ Leisure / Vacation
+                                </label>
+                            </div>
+                            <div>
+                                <input type="checkbox" id="tag-family" class="tag-check hidden">
+                                <label for="tag-family" class="inline-block px-4 py-2 border border-gray-200 rounded-full text-sm text-gray-600 cursor-pointer hover:bg-gray-50 transition-all select-none">
+                                    👨‍👩‍👧‍👦 Family Friendly
+                                </label>
+                            </div>
+                            <div>
+                                <input type="checkbox" id="tag-explore" class="tag-check hidden">
+                                <label for="tag-explore" class="inline-block px-4 py-2 border border-gray-200 rounded-full text-sm text-gray-600 cursor-pointer hover:bg-gray-50 transition-all select-none">
+                                    🎒 Deep Exploration
+                                </label>
+                            </div>
+                             <div>
+                                <input type="checkbox" id="tag-remote" class="tag-check hidden">
+                                <label for="tag-remote" class="inline-block px-4 py-2 border border-gray-200 rounded-full text-sm text-gray-600 cursor-pointer hover:bg-gray-50 transition-all select-none">
+                                    💻 Work / Mixed
+                                </label>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Footer / CTA -->
+                <div class="p-8 md:p-10 bg-gray-50 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center gap-6 sticky bottom-0 z-20">
+                    <div class="w-full md:w-auto text-center md:text-left">
+                        <p class="text-xs font-medium text-gray-500 mb-1">We’ll generate a starting route.</p>
+                        <p class="text-xs text-gray-400">You can change everything later.</p>
+                    </div>
+                    
+                    <div class="flex items-center gap-4 w-full md:w-auto">
+                        <button type="button" class="hidden md:block px-6 py-3 text-sm font-medium text-gray-500 hover:text-moss transition-colors">
+                            Save Draft
+                        </button>
+                        <button type="submit" id="build-btn" class="flex-1 md:flex-none bg-moss text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-moss-light transition-all shadow-xl shadow-moss/20 disabled:opacity-50 disabled:cursor-not-allowed group">
+                            Build My Route
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </form>
+
+        <div class="text-center mt-8">
+            <button class="text-sm font-medium text-gray-400 hover:text-charcoal transition-colors"> Back to Dashboard</button>
+        </div>
+
+    </main>
+
+    <!-- LOADING OVERLAY (Hidden by default) -->
+    <div id="loading-overlay" class="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center hidden opacity-0 transition-opacity duration-500">
+        <!-- Animated Map Path SVG -->
+        <div class="relative w-48 h-48 mb-8">
+            <svg class="w-full h-full" viewBox="0 0 100 100" fill="none" stroke="currentColor">
+                <!-- Static Points -->
+                <circle cx="20" cy="80" r="3" class="text-ochre fill-current" />
+                <circle cx="80" cy="20" r="3" class="text-moss fill-current" />
+                
+                <!-- Animated Path -->
+                <path d="M20 80 Q 40 20 80 20" stroke-width="2" stroke-linecap="round" class="text-gray-300" />
+                <path id="anim-path" d="M20 80 Q 40 20 80 20" stroke-width="2" stroke-linecap="round" class="text-moss animate-path opacity-0" />
+            </svg>
+            <div class="absolute inset-0 flex items-center justify-center">
+                <i class="ph-fill ph-car text-xl text-charcoal bg-white p-1 rounded-full shadow-sm animate-bounce"></i>
+            </div>
+        </div>
+
+        <h2 class="font-display text-2xl font-medium text-charcoal mb-2">Mapping your route...</h2>
+        <div class="overflow-hidden h-6 mb-2 relative w-64 text-center">
+            <p id="loading-text" class="text-gray-500 text-sm transition-transform duration-500 absolute w-full left-0 top-0">Checking traffic conditions</p>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        function toggleVehicleDetails(type) {
+            const evDetails = document.getElementById('details-ev');
+            const rvDetails = document.getElementById('details-rv');
+            
+            // Close all first
+            evDetails.classList.remove('open');
+            rvDetails.classList.remove('open');
+
+            // Open selected
+            if (type === 'ev') {
+                evDetails.classList.add('open');
+            } else if (type === 'rv') {
+                rvDetails.classList.add('open');
+            }
+        }
+
+        function handleBuild(e) {
+            e.preventDefault();
+            
+            // Simple validation simulation
+            const start = document.getElementById('start-loc').value;
+            const end = document.getElementById('end-loc').value;
+            
+            if(!start || !end) {
+                // Shake button or show error (using simple alert for demo)
+                const btn = document.getElementById('build-btn');
+                btn.classList.add('animate-pulse', 'bg-red-800');
+                setTimeout(() => btn.classList.remove('animate-pulse', 'bg-red-800'), 500);
+                return;
+            }
+
+            // Show Loading
+            const overlay = document.getElementById('loading-overlay');
+            const animPath = document.getElementById('anim-path');
+            
+            overlay.classList.remove('hidden');
+            // Force reflow
+            void overlay.offsetWidth; 
+            overlay.classList.remove('opacity-0');
+            
+            // Trigger Path Animation
+            animPath.classList.remove('opacity-0');
+
+            // Cycle loading text
+            const textEl = document.getElementById('loading-text');
+            const messages = [
+                "Finding scenic backroads...",
+                "Locating EV chargers...",
+                "Checking weather forecasts...",
+                "Optimizing for maximum fun..."
+            ];
+            
+            let i = 0;
+            setInterval(() => {
+                if(i < messages.length) {
+                    textEl.style.opacity = '0';
+                    setTimeout(() => {
+                        textEl.innerText = messages[i];
+                        textEl.style.opacity = '1';
+                    }, 200);
+                    i++;
+                }
+            }, 1200);
+
+            // Simulate Redirect
+            setTimeout(() => {
+                // In a real app, this would route to the builder
+               // window.location.href = '/builder';
+               console.log("Redirecting to builder...");
+            }, 6000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trip Builder — RoadDoggs</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'moss': '#2C4A3B',
+                        'moss-light': '#3E614F',
+                        'sand': '#F4F2EE',
+                        'sand-dark': '#E6E2DA',
+                        'charcoal': '#1A1A1A',
+                        'ochre': '#C27835',
+                        'ochre-light': '#D98F4F',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
+                        'float': '0 20px 40px -10px rgba(0,0,0,0.15)',
+                    },
+                    backdropBlur: {
+                        'xs': '2px',
+                    },
+                    cursor: {
+                        'grab': 'grab',
+                        'grabbing': 'grabbing',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            overflow: hidden; /* App-like behavior */
+            background-color: #e5e5e5;
+        }
+
+        /* Glass Panel Utility */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        /* Waypoint Timeline Line */
+        .timeline-container::before {
+            content: '';
+            position: absolute;
+            top: 2rem;
+            bottom: 2rem;
+            left: 1.5rem; /* Adjust based on icon width */
+            width: 2px;
+            background: #E5E7EB;
+            z-index: 0;
+            border-radius: 99px;
+            background-image: linear-gradient(to bottom, #2C4A3B 50%, #E5E7EB 50%);
+            background-size: 100% 200%;
+            transition: background-position 0.5s;
+        }
+
+        /* Map Pin Pulse */
+        @keyframes pin-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(194, 120, 53, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(194, 120, 53, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(194, 120, 53, 0); }
+        }
+        .pin-active {
+            animation: pin-pulse 2s infinite;
+        }
+
+        /* Scrollbars (Hidden for sleekness) */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Draggable visual cue */
+        .draggable-item:hover {
+            background-color: #F9FAFB;
+        }
+        .draggable-item:active {
+            cursor: grabbing;
+            background-color: #F3F4F6;
+            transform: scale(0.99);
+        }
+
+        /* Transition for Panels sliding in/out */
+        .panel-transition {
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+        }
+    </style>
+</head>
+<body class="h-screen w-full relative text-charcoal flex flex-col">
+
+    <!-- === BACKGROUND MAP CANVAS === -->
+    <div class="absolute inset-0 z-0 bg-gray-200 overflow-hidden pointer-events-auto">
+        <!-- Simulated Map Image -->
+        <!-- Using a generic map style image to simulate the canvas -->
+        <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=2748&q=80" 
+             alt="Map Background" 
+             class="w-full h-full object-cover opacity-80 grayscale-[20%] brightness-110 select-none">
+        
+        <!-- Simulated Route Line (SVG Overlay) -->
+        <svg class="absolute inset-0 w-full h-full pointer-events-none z-10 hidden md:block">
+            <!-- Path from Las Vegas to Zion to Bryce -->
+            <path d="M 400 600 Q 550 500 650 450 T 800 350" 
+                  stroke="#2C4A3B" stroke-width="4" fill="none" stroke-dasharray="10 0" stroke-linecap="round" 
+                  class="drop-shadow-md opacity-80" />
+        </svg>
+
+        <!-- Simulated Pins -->
+        <!-- Origin -->
+        <div class="absolute top-[60%] left-[20%] transform -translate-x-1/2 -translate-y-1/2 z-20 cursor-pointer group">
+            <div class="w-8 h-8 rounded-full bg-charcoal text-white flex items-center justify-center border-2 border-white shadow-lg font-bold text-xs group-hover:scale-110 transition-transform">1</div>
+            <div class="absolute top-10 left-1/2 -translate-x-1/2 bg-white px-3 py-1 rounded shadow text-xs font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">Las Vegas</div>
+        </div>
+        
+        <!-- Highlghted Stop -->
+        <div class="absolute top-[45%] left-[34%] transform -translate-x-1/2 -translate-y-1/2 z-20 cursor-pointer pin-active group">
+            <div class="w-10 h-10 rounded-full bg-ochre text-white flex items-center justify-center border-2 border-white shadow-lg font-bold text-sm group-hover:scale-110 transition-transform">2</div>
+             <div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-white px-3 py-1.5 rounded-lg shadow-xl text-xs font-bold whitespace-nowrap flex items-center gap-2">
+                Zion National Park <i class="ph-bold ph-caret-right text-gray-400"></i>
+            </div>
+        </div>
+
+        <!-- POI Chip (Floating) -->
+        <div class="absolute top-[35%] left-[42%] transform -translate-x-1/2 -translate-y-1/2 z-10 cursor-pointer hover:z-30">
+            <div class="bg-white px-2 py-1.5 rounded-lg shadow-md flex items-center gap-1.5 border border-gray-100 hover:border-moss transition-colors">
+                <i class="ph-fill ph-coffee text-amber-700 text-sm"></i>
+                <span class="text-[10px] font-semibold text-gray-600">River Rock Roasting</span>
+            </div>
+        </div>
+        
+         <!-- POI Chip (Floating) -->
+         <div class="absolute top-[40%] left-[50%] transform -translate-x-1/2 -translate-y-1/2 z-10 cursor-pointer hover:z-30">
+            <div class="bg-white px-2 py-1.5 rounded-lg shadow-md flex items-center gap-1.5 border border-gray-100 hover:border-moss transition-colors">
+                <i class="ph-fill ph-tree text-green-700 text-sm"></i>
+                <span class="text-[10px] font-semibold text-gray-600">Hidden Canyon Trail</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- === TOP NAVIGATION BAR (Floating) === -->
+    <nav class="relative z-50 px-4 py-3 pointer-events-none">
+        <div class="max-w-[1920px] mx-auto flex justify-between items-center bg-white/90 backdrop-blur-md rounded-2xl shadow-sm border border-gray-200/50 p-2 pl-4 pointer-events-auto">
+            
+            <!-- Left: Back & Title -->
+            <div class="flex items-center gap-4 border-r border-gray-200 pr-4 mr-2">
+                <a href="#" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 transition-colors" rel="nofollow">
+                    <i class="ph-bold ph-arrow-left"></i>
+                </a>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="font-display font-semibold text-charcoal text-sm md:text-base cursor-pointer hover:underline decoration-dashed decoration-gray-300">
+                            Spring Southwest Road Trip
+                        </h1>
+                        <span class="bg-yellow-100 text-yellow-700 text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">Draft</span>
+                    </div>
+                    <p class="text-[10px] md:text-xs text-gray-500">Oct 14 - Oct 22 • 4 Travelers</p>
+                </div>
+            </div>
+
+            <!-- Center: Mode Toggles (Desktop) -->
+            <div class="hidden md:flex items-center bg-gray-100 p-1 rounded-lg">
+                <button class="px-4 py-1.5 bg-white shadow-sm rounded-md text-xs font-semibold text-charcoal flex items-center gap-2">
+                    <i class="ph-fill ph-map-trifold"></i> Map View
+                </button>
+                <button class="px-4 py-1.5 text-xs font-medium text-gray-500 hover:text-charcoal flex items-center gap-2">
+                    <i class="ph-fill ph-calendar-blank"></i> Calendar
+                </button>
+            </div>
+
+            <!-- Right: Collaboration & Actions -->
+            <div class="flex items-center gap-3 pl-4">
+                <!-- Avatars -->
+                <div class="flex -space-x-2 mr-2">
+                    <img class="w-8 h-8 rounded-full border-2 border-white ring-1 ring-gray-100" src="https://images.unsplash.com/photo-1599566150163-29194dcaad36?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" alt="" title="Alex (Owner)">
+                    <img class="w-8 h-8 rounded-full border-2 border-white ring-1 ring-gray-100" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" alt="" title="Sarah (Editor)">
+                    <button class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 text-xs border-2 border-white hover:bg-moss hover:text-white transition-colors">
+                        <i class="ph-bold ph-plus"></i>
+                    </button>
+                </div>
+
+                <div class="h-6 w-px bg-gray-200 mx-1"></div>
+
+                <button class="text-gray-500 hover:text-moss p-2 rounded-lg transition-colors">
+                     <i class="ph-fill ph-gear"></i>
+                </button>
+                <button class="bg-charcoal text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-moss transition-colors shadow-md">
+                    Share
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- === MAIN WORKSPACE GRID === -->
+    <!-- Added 'justify-between' to push panels to far edges -->
+    <div class="flex-1 relative z-40 flex justify-between overflow-hidden pointer-events-none p-4 gap-4">
+        
+        <!-- == ZONE 2: PLANNING PANEL (LEFT) == -->
+        <aside class="w-full md:w-[400px] flex flex-col pointer-events-auto h-full max-h-full">
+            <div class="glass-panel rounded-3xl shadow-float flex flex-col h-full overflow-hidden transition-all duration-300 transform translate-x-0" id="planning-panel">
+                
+                <!-- Expanded Header: Route Summary -->
+                <div class="p-5 border-b border-gray-100/50 bg-white/50 backdrop-blur-sm">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="flex items-center gap-2 text-moss font-medium text-xs uppercase tracking-wider">
+                            <i class="ph-fill ph-car"></i> Driving Stats
+                        </div>
+                        <button class="text-xs text-gray-400 hover:text-moss underline">Edit Preferences</button>
+                    </div>
+                    
+                    <div class="grid grid-cols-3 gap-2">
+                        <div class="bg-white p-3 rounded-2xl border border-gray-100 text-center">
+                            <span class="block text-xl font-display font-bold text-charcoal">8h 20m</span>
+                            <span class="text-[10px] text-gray-500 font-medium uppercase">Time</span>
+                        </div>
+                        <div class="bg-white p-3 rounded-2xl border border-gray-100 text-center">
+                            <span class="block text-xl font-display font-bold text-charcoal">430 mi</span>
+                            <span class="text-[10px] text-gray-500 font-medium uppercase">Distance</span>
+                        </div>
+                        <!-- Alert Stat -->
+                        <div class="bg-amber-50 p-3 rounded-2xl border border-amber-100 text-center">
+                            <span class="block text-xl font-display font-bold text-amber-700">4</span>
+                            <span class="text-[10px] text-amber-600 font-medium uppercase">Stops</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scrollable Waypoints List -->
+                <div class="flex-1 overflow-y-auto custom-scroll relative bg-white/40">
+                    <div class="p-4 space-y-2 timeline-container relative">
+                        
+                        <!-- Origin -->
+                        <div class="draggable-item flex items-start gap-3 p-3 rounded-xl border border-transparent hover:border-gray-200 transition-all group relative z-10">
+                            <!-- Number/Icon -->
+                            <div class="mt-1 w-6 h-6 rounded-full bg-charcoal text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-sm cursor-grab">1</div>
+                            
+                            <!-- Content -->
+                            <div class="flex-1 min-w-0">
+                                <div class="flex justify-between items-start">
+                                    <h4 class="font-semibold text-charcoal text-sm truncate">Las Vegas, NV</h4>
+                                    <button class="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100"><i class="ph-bold ph-trash"></i></button>
+                                </div>
+                                <p class="text-xs text-gray-500">Departing Oct 14 • 9:00 AM</p>
+                            </div>
+                            <!-- Drag Handle -->
+                            <div class="text-gray-300 opacity-0 group-hover:opacity-100 cursor-grab flex items-center self-center"><i class="ph-bold ph-dots-six-vertical"></i></div>
+                        </div>
+
+                        <!-- Connector Info (Drive Time) -->
+                        <div class="pl-12 py-2">
+                            <span class="inline-flex items-center gap-1 text-[10px] font-medium text-gray-500 bg-white/60 px-2 py-0.5 rounded-full border border-gray-100">
+                                <i class="ph-fill ph-steering-wheel text-moss"></i> 2h 40m drive
+                            </span>
+                        </div>
+
+                        <!-- Stop 1 (Highlighted) -->
+                        <div class="draggable-item flex items-start gap-3 p-3 rounded-xl bg-white border border-moss/30 shadow-sm transition-all group relative z-10">
+                            <div class="mt-1 w-6 h-6 rounded-full bg-ochre text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-sm cursor-grab">2</div>
+                            
+                            <div class="flex-1 min-w-0">
+                                <div class="flex justify-between items-start">
+                                    <h4 class="font-semibold text-charcoal text-sm truncate">Zion National Park</h4>
+                                    <div class="flex gap-2">
+                                        <button class="text-gray-400 hover:text-moss" title="Add Note"><i class="ph-bold ph-note-pencil"></i></button>
+                                    </div>
+                                </div>
+                                <div class="flex flex-wrap gap-1 mt-1.5">
+                                    <span class="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-medium">Outdoors</span>
+                                    <span class="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded font-medium">Entrance Pass</span>
+                                </div>
+                                <!-- User note -->
+                                <div class="mt-2 bg-yellow-50 p-2 rounded text-xs text-yellow-800 border border-yellow-100 flex gap-2">
+                                    <img src="https://images.unsplash.com/photo-1599566150163-29194dcaad36?ixlib=rb-4.0.3&auto=format&fit=crop&w=30&q=80" class="w-4 h-4 rounded-full" >
+                                    "We need to reserve the shuttle!"
+                                </div>
+                            </div>
+                            <div class="text-gray-300 opacity-0 group-hover:opacity-100 cursor-grab flex items-center self-center"><i class="ph-bold ph-dots-six-vertical"></i></div>
+                        </div>
+
+                        <!-- Connector Info -->
+                        <div class="pl-12 py-2">
+                            <span class="inline-flex items-center gap-1 text-[10px] font-medium text-gray-500 bg-white/60 px-2 py-0.5 rounded-full border border-gray-100">
+                                <i class="ph-fill ph-steering-wheel text-moss"></i> 1h 20m drive
+                            </span>
+                        </div>
+
+                         <!-- Stop 2 -->
+                         <div class="draggable-item flex items-start gap-3 p-3 rounded-xl border border-transparent hover:border-gray-200 transition-all group relative z-10 opactiy-70">
+                            <div class="mt-1 w-6 h-6 rounded-full bg-charcoal text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-sm cursor-grab">3</div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex justify-between items-start">
+                                    <h4 class="font-semibold text-charcoal text-sm truncate">Bryce Canyon</h4>
+                                    <button class="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100"><i class="ph-bold ph-trash"></i></button>
+                                </div>
+                                <p class="text-xs text-gray-500">2 nights</p>
+                            </div>
+                             <div class="text-gray-300 opacity-0 group-hover:opacity-100 cursor-grab flex items-center self-center"><i class="ph-bold ph-dots-six-vertical"></i></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Add Stop Button (Sticky Bottom of List) -->
+                    <div class="p-4 sticky bottom-0 bg-gradient-to-t from-white via-white to-transparent pt-8">
+                        <button class="w-full py-3 border-2 border-dashed border-gray-300 rounded-xl text-gray-500 hover:border-moss hover:text-moss hover:bg-moss/5 transition-all text-sm font-medium flex items-center justify-center gap-2 group">
+                            <i class="ph-bold ph-plus-circle text-lg group-hover:scale-110 transition-transform"></i> Add Stop
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- == MAP CONTROLS (Floating Center/Bottom) == -->
+        <div class="absolute bottom-6 left-1/2 -translate-x-1/2 pointer-events-auto flex items-end gap-4 z-50">
+            <!-- Layers -->
+             <div class="bg-white rounded-full shadow- float p-1 flex items-center border border-gray-200">
+                <button class="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-600" title="Download Offline Maps">
+                    <i class="ph-fill ph-download-simple"></i>
+                </button>
+                <div class="w-px h-4 bg-gray-200 mx-1"></div>
+                <button class="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center text-moss" title="Show POIs">
+                    <i class="ph-fill ph-map-pin"></i>
+                </button>
+                <button class="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-blue-500" title="Weather Overlay">
+                    <i class="ph-bold ph-cloud-sun"></i>
+                </button>
+            </div>
+
+            <!-- Zoom -->
+            <div class="bg-white rounded-full shadow-float flex flex-col border border-gray-200 overflow-hidden hidden md:flex">
+                <button class="w-10 h-10 hover:bg-gray-50 flex items-center justify-center text-gray-600 border-b border-gray-100"><i class="ph-bold ph-plus"></i></button>
+                <button class="w-10 h-10 hover:bg-gray-50 flex items-center justify-center text-gray-600"><i class="ph-bold ph-minus"></i></button>
+            </div>
+        </div>
+
+        <!-- == ZONE 3: CONTEXT PANEL (RIGHT/DRAWER) == -->
+        <!-- Just showing the edge or collapsed state initially, expands on interaction -->
+        <aside class="w-full md:w-[360px] pointer-events-auto h-full flex flex-col items-end">
+            <div class="glass-panel w-full h-full rounded-3xl shadow-float flex flex-col overflow-hidden relative" id="context-panel">
+                
+                <!-- Tab Switcher -->
+                <div class="p-2 bg-white/50 backdrop-blur-sm border-b border-gray-100">
+                    <nav class="flex bg-gray-100/50 p-1 rounded-xl">
+                        <button class="flex-1 py-1.5 rounded-lg text-xs font-semibold bg-white text-moss shadow-sm transition-all text-center">Discovery</button>
+                        <button class="flex-1 py-1.5 rounded-lg text-xs font-medium text-gray-500 hover:text-charcoal transition-all text-center">Stop Details</button>
+                    </nav>
+                </div>
+
+                <!-- Content: Discovery Feed -->
+                <div class="flex-1 overflow-y-auto custom-scroll p-4 space-y-4">
+                    
+                    <!-- AI Insight -->
+                    <div class="bg-gradient-to-br from-moss/5 to-ochre/5 p-4 rounded-xl border border-moss/10">
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 rounded-full bg-moss/10 flex items-center justify-center text-moss shrink-0">
+                                <i class="ph-fill ph-sparkle"></i>
+                            </div>
+                            <div>
+                                <h5 class="text-sm font-bold text-gray-800">For Your Drive</h5>
+                                <p class="text-xs text-gray-600 mt-1 leading-relaxed">
+                                    Since you like <span class="font-medium text-moss">Local Coffee</span>, here are top-rated roasters near Zion.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- POI Card -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden group hover:shadow-md transition-shadow cursor-pointer">
+                        <div class="h-32 relative">
+                            <img src="https://images.unsplash.com/photo-1497935586351-b67a49e012bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" 
+                                 class="w-full h-full object-cover">
+                            <button class="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors">
+                                <i class="ph-fill ph-heart"></i>
+                            </button>
+                            <span class="absolute bottom-2 left-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded backdrop-blur-sm">
+                                4 min detour
+                            </span>
+                        </div>
+                        <div class="p-3">
+                            <div class="flex justify-between items-start mb-1">
+                                <h4 class="font-bold text-charcoal text-sm">River Rock Roasting Co.</h4>
+                                <span class="flex items-center text-xs font-bold text-yellow-600"><i class="ph-fill ph-star mr-1"></i> 4.9</span>
+                            </div>
+                            <p class="text-xs text-gray-500 mb-3 line-clamp-2">Edge-of-cliff espresso bar with canyon views. A must-stop for breakfast.</p>
+                            <button class="w-full py-2 rounded-lg bg-gray-50 text-moss text-xs font-bold hover:bg-moss hover:text-white transition-colors border border-gray-100">
+                                Add to Trip
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- POI Card -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden group hover:shadow-md transition-shadow cursor-pointer">
+                         <div class="h-32 relative">
+                            <img src="https://images.unsplash.com/photo-1552650272-b8aef46e852a?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" 
+                                 class="w-full h-full object-cover">
+                            <button class="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors">
+                                <i class="ph-fill ph-heart"></i>
+                            </button>
+                            <span class="absolute bottom-2 left-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded backdrop-blur-sm">
+                                On route
+                            </span>
+                        </div>
+                        <div class="p-3">
+                            <div class="flex justify-between items-start mb-1">
+                                <h4 class="font-bold text-charcoal text-sm">Grafton Ghost Town</h4>
+                                <span class="flex items-center text-xs font-bold text-yellow-600"><i class="ph-fill ph-star mr-1"></i> 4.5</span>
+                            </div>
+                            <p class="text-xs text-gray-500 mb-3 line-clamp-2">Historic abandoned settlement featured in Butch Cassidy and the Sundance Kid.</p>
+                            <button class="w-full py-2 rounded-lg bg-gray-50 text-moss text-xs font-bold hover:bg-moss hover:text-white transition-colors border border-gray-100">
+                                Add to Trip
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <!-- Toggle Handle (Mobile / Collapsed state simulation) -->
+            <button class="absolute top-1/2 -left-3 w-6 h-12 bg-white rounded-l-lg shadow-md flex items-center justify-center text-gray-400 hover:text-moss md:hidden">
+                <i class="ph-bold ph-caret-left"></i>
+            </button>
+        </aside>
+
+    </div>
+
+    <!-- === INTERACTION SCRIPTS === -->
+    <script>
+        // Simple Interaction: Toggle Lock on waypoint
+        const waypoints = document.querySelectorAll('.draggable-item');
+        waypoints.forEach(wp => {
+            wp.addEventListener('click', () => {
+                // Remove active class from others
+                waypoints.forEach(w => w.classList.remove('border-moss/30', 'bg-white', 'shadow-sm'));
+                // Add to clicked
+                wp.classList.add('border-moss/30', 'bg-white', 'shadow-sm');
+                // In a real app, this would trigger the map to pan and the context panel to show details
+            });
+        });
+
+        // Add Stop Interaction Simulation
+        const addBtn = document.querySelector('button.border-dashed');
+        if(addBtn){
+            addBtn.addEventListener('click', () => {
+                addBtn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Adding...';
+                setTimeout(() => {
+                    addBtn.innerHTML = '<i class="ph-bold ph-plus-circle"></i> Add Stop';
+                    // Just visual feedback
+                }, 800);
+            });
+        }
+    </script>
+</body>
+</html>
