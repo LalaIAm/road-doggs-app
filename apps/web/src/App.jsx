@@ -10,6 +10,7 @@ import SignUpPage from './pages/SignUpPage';
 import SignInPage from './pages/SignInPage';
 import PasswordResetPage from './pages/PasswordResetPage';
 import ProfilePage from './pages/ProfilePage';
+import OnboardingPage from './pages/OnboardingPage';
 
 // Initialize auth on app mount
 function AppRoutes() {
@@ -33,6 +34,7 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route path="/onboarding" element={<OnboardingPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
