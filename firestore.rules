@@ -15,12 +15,9 @@ service cloud.firestore {
     
     // Users collection
     // Users can read and write their own user document
+    // Note: Cloud Functions update auditLog using admin SDK, so no special rule needed
     match /users/{userId} {
       allow read, write: if isOwner(userId);
-      
-      // Allow users to update their own auditLog (for Cloud Functions)
-      allow update: if isOwner(userId) && 
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['auditLog']);
     }
     
     // Trips collection
