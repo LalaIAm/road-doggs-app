@@ -45,6 +45,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
+        working-directory: apps/web
         run: npm ci
 
       - name: Run unit tests
