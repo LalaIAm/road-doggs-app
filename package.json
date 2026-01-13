@@ -11,5 +11,7 @@
     "build": "npm run build --workspace=apps/web",
     "preview": "npm run preview --workspace=apps/web"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "wait-on": "^9.0.3"
+  }
 }
