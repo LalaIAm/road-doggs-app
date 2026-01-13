@@ -10,8 +10,10 @@ import {
   CoffeeIcon,
   CameraIcon,
 } from "@phosphor-icons/react";
+import {useNavigate} from "react-router-dom";
 
 function HeroSection() {
+  const navigate = useNavigate()
   return (
     <header className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 px-6">
       <div className="max-w-7xl mx-auto grid lg:grid-cols-12 gap-12 lg:gap-20 items-center">
@@ -37,7 +39,7 @@ function HeroSection() {
 
           <div className="flex items-center gap-6 mt-2">
             <a
-              href="#"
+              href="/signup"
               className="bg-moss text-white px-8 py-4 rounded-full font-medium inline-flex items-center gap-2 hover:bg-moss-light transition-all shadow-xl shadow-moss/20"
             >
               Plan Your Trip <ArrowRightIcon weight="fill" />
