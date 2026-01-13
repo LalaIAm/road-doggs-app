@@ -1,0 +1,36 @@
+{
+  "name": "roaddoggs-functions",
+  "version": "1.0.0",
+  "description": "Firebase Cloud Functions for RoadDoggs - Auth Export & Deletion",
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "tsc",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log",
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "engines": {
+    "node": "22"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.0.0",
+    "firebase-functions": "^4.5.0",
+    "archiver": "^7.0.1",
+    "@sendgrid/mail": "^8.1.0",
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/archiver": "^6.0.2",
+    "@types/express": "^4.17.21",
+    "typescript": "^5.3.0",
+    "jest": "^29.7.0",
+    "@types/jest": "^29.5.0",
+    "ts-jest": "^29.1.0"
+  },
+  "private": true
+}

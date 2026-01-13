@@ -1,0 +1,82 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to check if user owns the resource
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Users collection
+    // Users can read and write their own user document
+    // Note: Cloud Functions update auditLog using admin SDK, so no special rule needed
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+    
+    // Trips collection
+    // Users can read and write trips they own (where userId field matches)
+    // Also allow read access for collaborators (if collaborators field exists)
+    match /trips/{tripId} {
+      allow read: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || 
+         (resource.data.collaborators != null && 
+          request.auth.uid in resource.data.collaborators));
+      
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid;
+      
+      allow update: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid ||
+         (resource.data.collaborators != null && 
+          request.auth.uid in resource.data.collaborators));
+      
+      allow delete: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+    }
+    
+    // Share links collection
+    // Users can read and write share links they own
+    match /shareLinks/{linkId} {
+      allow read: if isAuthenticated() && 
+        (resource.data.ownerId == request.auth.uid ||
+         // Allow read if link is active and not expired (for shared access)
+         (resource.data.expiresAt != null && 
+          resource.data.expiresAt > request.time &&
+          resource.data.active == true));
+      
+      allow create: if isAuthenticated() && 
+        request.resource.data.ownerId == request.auth.uid;
+      
+      allow update, delete: if isAuthenticated() && 
+        resource.data.ownerId == request.auth.uid;
+    }
+    
+    // Preferences collection
+    // Users can read and write their own preferences
+    match /preferences/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+    
+    // Jobs collection (created by Cloud Functions)
+    // Users can only read their own jobs (write is done by Cloud Functions with admin SDK)
+    match /jobs/{jobId} {
+      allow read: if isAuthenticated() && 
+        resource.data.uid == request.auth.uid;
+      
+      // Cloud Functions write with admin SDK, so no client write rules needed
+      allow write: if false;
+    }
+    
+    // Deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
