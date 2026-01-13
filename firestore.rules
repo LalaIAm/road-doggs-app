@@ -2,18 +2,78 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // This rule allows anyone with your Firestore database reference to view, edit,
-    // and delete all data in your Firestore database. It is useful for getting
-    // started, but it is configured to expire after 30 days because it
-    // leaves your app open to attackers. At that time, all client
-    // requests to your Firestore database will be denied.
-    //
-    // Make sure to write security rules for your app before that time, or else
-    // all client requests to your Firestore database will be denied until you Update
-    // your rules
+    
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to check if user owns the resource
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Users collection
+    // Users can read and write their own user document
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+      
+      // Allow users to update their own auditLog (for Cloud Functions)
+      allow update: if isOwner(userId) && 
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['auditLog']);
+    }
+    
+    // Trips collection
+    // Users can read and write trips they own (where userId field matches)
+    match /trips/{tripId} {
+      allow read: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || 
+         resource.data.collaborators != null && 
+         request.auth.uid in resource.data.collaborators);
+      
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid;
+      
+      allow update, delete: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+    }
+    
+    // Share links collection
+    // Users can read and write share links they own
+    match /shareLinks/{linkId} {
+      allow read: if isAuthenticated() && 
+        (resource.data.ownerId == request.auth.uid ||
+         // Allow read if link is active and not expired (for shared access)
+         (resource.data.expiresAt != null && 
+          resource.data.expiresAt > request.time &&
+          resource.data.active == true));
+      
+      allow create: if isAuthenticated() && 
+        request.resource.data.ownerId == request.auth.uid;
+      
+      allow update, delete: if isAuthenticated() && 
+        resource.data.ownerId == request.auth.uid;
+    }
+    
+    // Preferences collection
+    // Users can read and write their own preferences
+    match /preferences/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+    
+    // Jobs collection (created by Cloud Functions)
+    // Users can only read their own jobs (write is done by Cloud Functions with admin SDK)
+    match /jobs/{jobId} {
+      allow read: if isAuthenticated() && 
+        resource.data.uid == request.auth.uid;
+      
+      // Cloud Functions write with admin SDK, so no client write rules needed
+      allow write: if false;
+    }
+    
+    // Deny all other access
     match /{document=**} {
-      allow read, write: if request.time < timestamp.date(2026, 1, 30);
+      allow read, write: if false;
     }
   }
 }
