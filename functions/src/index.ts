@@ -5,7 +5,7 @@
 
 import './config'; // Initialize Firebase Admin
 import * as functions from 'firebase-functions';
-import * as express from 'express';
+import express from 'express';
 import { exportStart, exportStatus } from './handlers/exportHandler';
 import { deleteStart, deleteStatus } from './handlers/deleteHandler';
 

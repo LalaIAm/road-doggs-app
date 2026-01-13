@@ -8,7 +8,7 @@ import { verifyToken, requireRecentAuth, verifyPrivacyConsent, AuthenticatedRequ
 import { createJob, updateJobStatus, getJob, hasActiveJob } from '../utils/jobStatus';
 import { auditActions } from '../utils/audit';
 import { sendDeletionCompletionEmail } from '../utils/email';
-import { deleteFilesByPrefix, listFiles } from '../utils/storage';
+import { deleteFilesByPrefix } from '../utils/storage';
 
 const BATCH_SIZE = 500; // Firestore batch write limit
 
@@ -191,7 +191,6 @@ export async function deleteStatus(req: Request, res: Response): Promise<void> {
  * Implements two-stage deletion with ordered cleanup
  */
 async function processDeletionJob(uid: string, jobId: string): Promise<void> {
-  const db = admin.firestore();
   const collectionsCleared: string[] = [];
   let filesDeleted = 0;
   

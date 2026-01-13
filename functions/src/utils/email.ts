@@ -4,7 +4,7 @@
  */
 
 import * as admin from 'firebase-admin';
-import * as sgMail from '@sendgrid/mail';
+import sgMail from '@sendgrid/mail';
 
 // Initialize SendGrid if API key is available
 const sendGridApiKey = process.env.SENDGRID_API_KEY;
@@ -47,16 +47,22 @@ export async function sendExportCompletionEmail(
       return;
     }
 
+    const templateId = process.env.SENDGRID_EXPORT_TEMPLATE_ID;
+    if (!templateId) {
+      console.warn('SENDGRID_EXPORT_TEMPLATE_ID not configured, skipping email');
+      return;
+    }
+
     const msg = {
       to: email,
       from: process.env.SENDGRID_FROM_EMAIL || 'noreply@roaddoggs.com',
       subject: 'Your RoadDoggs data export is ready',
-      templateId: process.env.SENDGRID_EXPORT_TEMPLATE_ID,
+      templateId: templateId as string,
       dynamicTemplateData: {
         jobId,
         downloadUrl: `${process.env.FRONTEND_URL}/export/${jobId}`,
       },
-    };
+    } as any;
 
     await sgMail.send(msg);
     console.log(`Export completion email sent to ${email} for job ${jobId}`);
@@ -83,15 +89,21 @@ export async function sendDeletionCompletionEmail(uid: string): Promise<void> {
       return;
     }
 
+    const templateId = process.env.SENDGRID_DELETION_TEMPLATE_ID;
+    if (!templateId) {
+      console.warn('SENDGRID_DELETION_TEMPLATE_ID not configured, skipping email');
+      return;
+    }
+
     const msg = {
       to: email,
       from: process.env.SENDGRID_FROM_EMAIL || 'noreply@roaddoggs.com',
       subject: 'Your RoadDoggs account has been deleted',
-      templateId: process.env.SENDGRID_DELETION_TEMPLATE_ID,
+      templateId: templateId as string,
       dynamicTemplateData: {
         confirmationMessage: 'Your account and all associated data have been permanently deleted.',
       },
-    };
+    } as any;
 
     await sgMail.send(msg);
     console.log(`Deletion completion email sent to ${email}`);

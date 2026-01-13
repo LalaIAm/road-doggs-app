@@ -4,7 +4,7 @@
 
 import { Request, Response } from 'express';
 import * as admin from 'firebase-admin';
-import * as archiver from 'archiver';
+import archiver from 'archiver';
 import { verifyToken, requireRecentAuth, verifyPrivacyConsent, AuthenticatedRequest } from '../utils/auth';
 import { createJob, updateJobStatus, getJob, hasActiveJob } from '../utils/jobStatus';
 import { gatherUserData } from '../utils/dataGatherer';
@@ -240,7 +240,7 @@ async function createZipArchive(data: any): Promise<Buffer> {
     const chunks: Buffer[] = [];
     const archive = archiver('zip', { zlib: { level: 9 } });
     
-    archive.on('data', (chunk) => chunks.push(chunk));
+    archive.on('data', (chunk: Buffer) => chunks.push(chunk));
     archive.on('end', () => resolve(Buffer.concat(chunks)));
     archive.on('error', reject);
     
