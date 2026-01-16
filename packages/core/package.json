@@ -1,0 +1,16 @@
+{
+  "name": "@roaddoggs/core",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": "./index.js"
+  },
+  "scripts": {
+    "build": "echo 'Core package build - no-op for now'",
+    "test": "echo 'Core package tests - to be implemented'",
+    "type-check": "tsc --noEmit"
+  },
+  "private": true
+}

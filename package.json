@@ -7,11 +7,15 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "npm run dev --workspace=apps/web",
-    "build": "npm run build --workspace=apps/web",
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "type-check": "turbo run type-check",
     "preview": "npm run preview --workspace=apps/web"
   },
   "devDependencies": {
+    "turbo": "^2.0.0",
     "wait-on": "^9.0.3"
   }
 }

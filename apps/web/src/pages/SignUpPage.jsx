@@ -1,5 +1,5 @@
 // Sign Up Page
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
 import {
@@ -18,6 +18,14 @@ function SignUpPage() {
   const navigate = useNavigate();
   const isLoading = useSelector((state) => state.auth.isLoading);
   const error = useSelector((state) => state.auth.error);
+  const user = useSelector((state) => state.auth.currentUser);
+  const currentUser = useSelector((state) => state.auth.currentUser);
+  
+  useEffect(() => {
+    if (user) {
+      navigate("/onboarding");
+    }
+  }, [user, navigate]);
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -91,7 +99,7 @@ function SignUpPage() {
         })
       ).unwrap();
       // Redirect to profile or dashboard
-      navigate("/profile");
+      navigate("/onboarding");
     } catch (err) {
       setLocalError(err);
     }

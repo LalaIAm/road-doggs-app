@@ -1,5 +1,5 @@
 {
-  "name": "@roaddoggs/ui",
+  "name": "@roaddoggs/ui-kit",
   "version": "1.0.0",
   "type": "module",
   "main": "./index.js",

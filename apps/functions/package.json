@@ -1,5 +1,5 @@
 {
-  "name": "roaddoggs-functions",
+  "name": "@roaddoggs/functions",
   "version": "1.0.0",
   "description": "Firebase Cloud Functions for RoadDoggs - Auth Export & Deletion",
   "main": "lib/index.js",
