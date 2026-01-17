@@ -11,4 +11,11 @@ module.exports = {
     '!src/**/*.d.ts',
     '!src/**/*.test.ts',
   ],
+  moduleNameMapper: {
+    '^@roaddoggs/core$': '<rootDir>/../../packages/core/src/models/identity',
+    '^@roaddoggs/core/(.*)$': '<rootDir>/../../packages/core/src/$1',
+  },
+  transformIgnorePatterns: [
+    'node_modules/(?!@roaddoggs)',
+  ],
 };
