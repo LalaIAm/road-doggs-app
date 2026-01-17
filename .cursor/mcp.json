@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "nautex": {
+      "command": "uvx",
+      "args": [
+        "nautex",
+        "mcp"
+      ],
+      "cwd": "C:\\Users\\lthor\\OneDrive\\a-road-dog-brand\\rdgs"
+    }
+  }
+}

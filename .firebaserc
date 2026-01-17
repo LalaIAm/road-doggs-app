@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "road-doggs-app"
+    "default": "road-doggs-app",
+    "production": "road-doggs-app",
+    "staging": "road-doggs-app",
+    "development": "road-doggs-app"
   }
 }

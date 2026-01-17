@@ -9,8 +9,15 @@
   },
   "scripts": {
     "build": "echo 'Core package build - no-op for now'",
-    "test": "echo 'Core package tests - to be implemented'",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "type-check": "tsc --noEmit"
   },
-  "private": true
+  "dependencies": {
+    "zod": "^3.23.8"
+  },
+  "private": true,
+  "devDependencies": {
+    "vitest": "^4.0.17"
+  }
 }

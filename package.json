@@ -2,6 +2,7 @@
   "name": "roaddoggs",
   "version": "1.0.0",
   "private": true,
+  "packageManager": "npm@11.6.2",
   "workspaces": [
     "apps/*",
     "packages/*"
@@ -12,7 +13,8 @@
     "test": "turbo run test",
     "lint": "turbo run lint",
     "type-check": "turbo run type-check",
-    "preview": "npm run preview --workspace=apps/web"
+    "preview": "npm run preview --workspace=apps/web",
+    "canary": "node scripts/canary-test.js"
   },
   "devDependencies": {
     "turbo": "^2.0.0",
