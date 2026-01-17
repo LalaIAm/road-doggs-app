@@ -105,6 +105,7 @@ jobs:
           wait-on: http://localhost:5173
           record: true 
           parallel: true
+          working-directory: apps/web
         env:
           PORT: 5173
 
