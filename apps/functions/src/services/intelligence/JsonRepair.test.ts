@@ -395,5 +395,43 @@ These are great recommendations!`;
         expect(parsed.items[0].tags.length).toBeGreaterThan(0);
       }
     });
+
+    it('should preserve apostrophes in single-quoted strings', () => {
+      const input = "{name: 'John's Pizzeria', description: 'Best pizza in town'}";
+      const result = repair(input);
+      expect(result.success).toBe(true);
+      expect(result.json).toBeDefined();
+      if (result.json) {
+        const parsed = JSON.parse(result.json);
+        expect(parsed.name).toBe("John's Pizzeria");
+        expect(parsed.description).toBe('Best pizza in town');
+      }
+    });
+
+    it('should handle contractions and possessives in strings', () => {
+      const input = `{
+  name: "It's a great place",
+  owner: "John's Restaurant",
+  description: "We don't serve that"
+}`;
+      const result = repair(input);
+      expect(result.success).toBe(true);
+      if (result.json) {
+        const parsed = JSON.parse(result.json);
+        expect(parsed.name).toBe("It's a great place");
+        expect(parsed.owner).toBe("John's Restaurant");
+        expect(parsed.description).toBe("We don't serve that");
+      }
+    });
+
+    it('should handle single-quoted strings with apostrophes in markdown blocks', () => {
+      const input = '```json\n{name: \'John\'s Pizzeria\'}\n```';
+      const result = repair(input);
+      expect(result.success).toBe(true);
+      if (result.json) {
+        const parsed = JSON.parse(result.json);
+        expect(parsed.name).toBe("John's Pizzeria");
+      }
+    });
   });
 });

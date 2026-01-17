@@ -107,10 +107,99 @@ function extractJsonBlock(text: string, startIndex: number): string | null {
 }
 
 /**
+ * Convert single-quoted strings to double-quoted strings
+ * Preserves apostrophes inside strings (e.g., "John's" stays as "John's")
+ * 
+ * Bug Fix: When inside a single-quoted string, we preserve all characters including apostrophes.
+ * Only when we see a single quote followed by a character that suggests the string is ending
+ * (comma, closing brace, colon, whitespace, etc.) do we treat it as a closing quote.
+ * 
+ * @param {string} jsonString - JSON string that may contain single-quoted strings
+ * @returns {string} JSON string with single-quoted strings converted to double-quoted
+ */
+function convertSingleQuotedStrings(jsonString: string): string {
+  let result = '';
+  let i = 0;
+  let inDoubleQuotedString = false;
+  let inSingleQuotedString = false;
+  let escapeNext = false;
+
+  while (i < jsonString.length) {
+    const char = jsonString[i];
+    const nextChar = i + 1 < jsonString.length ? jsonString[i + 1] : '';
+
+    if (escapeNext) {
+      result += char;
+      escapeNext = false;
+      i++;
+      continue;
+    }
+
+    if (char === '\\') {
+      result += char;
+      escapeNext = true;
+      i++;
+      continue;
+    }
+
+    // Handle double-quoted strings (preserve as-is)
+    if (char === '"' && !inSingleQuotedString) {
+      inDoubleQuotedString = !inDoubleQuotedString;
+      result += char;
+      i++;
+      continue;
+    }
+
+    // Handle single-quoted strings
+    if (char === "'" && !inDoubleQuotedString) {
+      if (!inSingleQuotedString) {
+        // Opening single quote - replace with double quote
+        result += '"';
+        inSingleQuotedString = true;
+      } else {
+        // We're inside a single-quoted string and see a single quote
+        // Check if this is a closing quote or an apostrophe inside the string
+        // It's a closing quote if followed by: comma, closing brace/bracket, colon, whitespace, or end of string
+        const isClosingQuote = /[,}\]\s:]/.test(nextChar) || i === jsonString.length - 1;
+        
+        if (isClosingQuote) {
+          // Closing single quote - replace with double quote
+          result += '"';
+          inSingleQuotedString = false;
+        } else {
+          // Apostrophe inside the string (e.g., "John's"), preserve it
+          result += "'";
+        }
+      }
+      i++;
+      continue;
+    }
+
+    // Inside single-quoted string, preserve all characters (including apostrophes)
+    if (inSingleQuotedString) {
+      result += char;
+      i++;
+      continue;
+    }
+
+    // Outside strings, preserve character
+    result += char;
+    i++;
+  }
+
+  // If we ended with an unclosed single-quoted string, close it
+  if (inSingleQuotedString) {
+    result += '"';
+  }
+
+  return result;
+}
+
+/**
  * Repair common JSON syntax errors
  * 
  * Fixes:
- * - Single quotes → Double quotes
+ * - Single quotes → Double quotes (preserving apostrophes inside strings)
  * - Trailing commas
  * - Missing commas between items
  * - Basic unquoted keys
@@ -129,10 +218,9 @@ export function repairJson(jsonString: string): string {
   // Remove trailing commas before } or ]
   repaired = repaired.replace(/,(\s*[}\]])/g, '$1');
 
-  // Step 2: Replace single quotes with double quotes (for keys and string values)
-  // This is tricky because we need to avoid replacing quotes inside strings
-  // For now, use a simple approach that works for most cases
-  repaired = repaired.replace(/'/g, '"');
+  // Step 2: Convert single-quoted strings to double-quoted strings
+  // This preserves apostrophes inside strings (e.g., "John's" stays as "John's")
+  repaired = convertSingleQuotedStrings(repaired);
 
   // Step 3: Add missing commas between items
   // Pattern: "value" followed by "key" or } followed by "key"
@@ -153,10 +241,104 @@ export function repairJson(jsonString: string): string {
   repaired = repaired.replace(/([}\]"])\s*(\d)/g, '$1,$2');
 
   // Step 6: Remove comments (basic support)
-  repaired = repaired.replace(/\/\/.*$/gm, ''); // Single-line comments
-  repaired = repaired.replace(/\/\*[\s\S]*?\*\//g, ''); // Multi-line comments
+  // Bug Fix: Only remove comments that are outside of strings
+  repaired = removeCommentsOutsideStrings(repaired);
 
   return repaired.trim();
+}
+
+/**
+ * Remove comments from JSON string, but only outside of string literals
+ * 
+ * Bug Fix: Prevents removal of // sequences inside strings (like URLs)
+ * 
+ * @param {string} jsonString - JSON string that may contain comments
+ * @returns {string} JSON string with comments removed (only outside strings)
+ */
+function removeCommentsOutsideStrings(jsonString: string): string {
+  let result = '';
+  let i = 0;
+  let inString = false;
+  let stringChar: string | null = null; // Track which quote type started the string
+  let escapeNext = false;
+
+  while (i < jsonString.length) {
+    const char = jsonString[i];
+    const nextChar = i + 1 < jsonString.length ? jsonString[i + 1] : '';
+
+    if (escapeNext) {
+      result += char;
+      escapeNext = false;
+      i++;
+      continue;
+    }
+
+    if (char === '\\') {
+      result += char;
+      escapeNext = true;
+      i++;
+      continue;
+    }
+
+    // Track string boundaries
+    if ((char === '"' || char === "'") && !inString) {
+      inString = true;
+      stringChar = char;
+      result += char;
+      i++;
+      continue;
+    }
+
+    if (inString && char === stringChar) {
+      inString = false;
+      stringChar = null;
+      result += char;
+      i++;
+      continue;
+    }
+
+    // Inside strings, preserve everything (including // and /*)
+    if (inString) {
+      result += char;
+      i++;
+      continue;
+    }
+
+    // Outside strings, check for comments
+    // Single-line comment: // followed by rest of line
+    if (char === '/' && nextChar === '/' && !inString) {
+      // Skip to end of line
+      while (i < jsonString.length && jsonString[i] !== '\n' && jsonString[i] !== '\r') {
+        i++;
+      }
+      // Preserve the newline if present
+      if (i < jsonString.length && (jsonString[i] === '\n' || jsonString[i] === '\r')) {
+        // Skip newline (don't add to result)
+        i++;
+      }
+      continue;
+    }
+
+    // Multi-line comment: /* ... */
+    if (char === '/' && nextChar === '*' && !inString) {
+      // Skip /* and find matching */
+      i += 2; // Skip '/*'
+      while (i < jsonString.length - 1) {
+        if (jsonString[i] === '*' && jsonString[i + 1] === '/') {
+          i += 2; // Skip '*/'
+          break;
+        }
+        i++;
+      }
+      continue;
+    }
+
+    // Not a comment, preserve character
+    result += char;
+    i++;
+  }
+
+  return result;
 }
 
 /**
