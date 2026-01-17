@@ -223,22 +223,23 @@ export function repairJson(jsonString: string): string {
   repaired = convertSingleQuotedStrings(repaired);
 
   // Step 3: Add missing commas between items
-  // Pattern: "value" followed by "key" or } followed by "key"
-  repaired = repaired.replace(/(")\s*(")/g, '$1,$2'); // Between string values
-  repaired = repaired.replace(/(\d)\s*(")/g, '$1,$2'); // Between number and string
-  repaired = repaired.replace(/(")\s*(\d)/g, '$1,$2'); // Between string and number
-  repaired = repaired.replace(/(\})\s*(")/g, '$1,$2'); // Between object end and string key
-  repaired = repaired.replace(/(\])\s*(")/g, '$1,$2'); // Between array end and string key
-  repaired = repaired.replace(/(")\s*(\{)/g, '$1,$2'); // Between string and object start
-  repaired = repaired.replace(/(")\s*(\[)/g, '$1,$2'); // Between string and array start
+  // Use \s+ (require whitespace) - this is idempotent because after adding comma, no whitespace remains
+  repaired = repaired.replace(/(\d)\s+(")/g, '$1,$2'); // Between number and string
+  repaired = repaired.replace(/(")\s+(\d)/g, '$1,$2'); // Between string and number
+  repaired = repaired.replace(/(\})\s+(")/g, '$1,$2'); // Between object end and string key
+  repaired = repaired.replace(/(\])\s+(")/g, '$1,$2'); // Between array end and string key
+  repaired = repaired.replace(/(")\s+(\{)/g, '$1,$2'); // Between string and object start
+  repaired = repaired.replace(/(")\s+(\[)/g, '$1,$2'); // Between string and array start
+  repaired = repaired.replace(/(")\s+(")/g, '$1,$2'); // Between two string values
 
   // Step 4: Fix basic unquoted keys (word:value pattern)
   // Only fix simple keys that are valid identifiers
   repaired = repaired.replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":');
 
-  // Step 5: Fix missing commas after closing braces/brackets
-  repaired = repaired.replace(/([}\]"])\s*(")/g, '$1,$2');
-  repaired = repaired.replace(/([}\]"])\s*(\d)/g, '$1,$2');
+  // Step 5: Fix missing commas after closing braces/brackets (but NOT after quotes to avoid loops)
+  // Use \s+ to require whitespace, preventing infinite loops
+  repaired = repaired.replace(/([}\]])\s+(\x22)/g, '$1,$2');
+  repaired = repaired.replace(/([}\]])\s+(\d)/g, '$1,$2');
 
   // Step 6: Remove comments (basic support)
   // Bug Fix: Only remove comments that are outside of strings
@@ -323,12 +324,18 @@ function removeCommentsOutsideStrings(jsonString: string): string {
     if (char === '/' && nextChar === '*' && !inString) {
       // Skip /* and find matching */
       i += 2; // Skip '/*'
+      const startPos = i;
       while (i < jsonString.length - 1) {
         if (jsonString[i] === '*' && jsonString[i + 1] === '/') {
           i += 2; // Skip '*/'
           break;
         }
         i++;
+        // Safety: prevent infinite loop if comment is never closed
+        if (i - startPos > 10000) {
+          // Unclosed comment, skip to end
+          break;
+        }
       }
       continue;
     }
