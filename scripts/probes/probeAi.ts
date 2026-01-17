@@ -14,15 +14,7 @@
 
 // Note: @google-cloud/vertexai should be installed
 // For local testing: npm install --save-dev @google-cloud/vertexai
-let VertexAI;
-try {
-  const vertexAIModule = await import('@google-cloud/vertexai');
-  VertexAI = vertexAIModule.VertexAI;
-} catch (error) {
-  console.error('❌ Error: @google-cloud/vertexai package not found');
-  console.error('   Install it with: npm install --save-dev @google-cloud/vertexai');
-  process.exit(1);
-}
+let VertexAI: any;
 
 const VERTEX_AI_PROJECT_ID = process.env.VERTEX_AI_PROJECT_ID;
 const VERTEX_AI_LOCATION = process.env.VERTEX_AI_LOCATION || 'us-central1';
@@ -156,6 +148,16 @@ async function probeVertexAI() {
  * Main probe execution
  */
 async function main() {
+  // Import @google-cloud/vertexai
+  try {
+    const vertexAIModule = await import('@google-cloud/vertexai');
+    VertexAI = (vertexAIModule as any).VertexAI;
+  } catch (error) {
+    console.error('❌ Error: @google-cloud/vertexai package not found');
+    console.error('   Install it with: npm install --save-dev @google-cloud/vertexai');
+    process.exit(1);
+  }
+
   console.log('🚀 Starting Vertex AI Probe...\n');
   
   const success = await probeVertexAI();

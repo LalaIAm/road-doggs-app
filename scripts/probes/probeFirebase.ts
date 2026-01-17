@@ -13,14 +13,7 @@
 // Note: firebase-admin should be installed
 // For local testing: npm install --save-dev firebase-admin
 
-let admin;
-try {
-  admin = await import('firebase-admin');
-} catch (error) {
-  console.error('❌ Error: firebase-admin package not found');
-  console.error('   Install it with: npm install --save-dev firebase-admin');
-  process.exit(1);
-}
+let admin: any;
 
 // Environment variables
 const FIREBASE_PROJECT_ID = process.env.FIREBASE_PROJECT_ID || process.env.GCLOUD_PROJECT;
@@ -319,6 +312,15 @@ async function probeFirebase() {
  * Main probe execution
  */
 async function main() {
+  // Import firebase-admin
+  try {
+    admin = await import('firebase-admin');
+  } catch (error) {
+    console.error('❌ Error: firebase-admin package not found');
+    console.error('   Install it with: npm install --save-dev firebase-admin');
+    process.exit(1);
+  }
+
   console.log('🚀 Starting Firebase Probe...\n');
   
   const success = await probeFirebase();

@@ -17,14 +17,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 // Import pdf-lib functions
-let pdfLib;
-try {
-  pdfLib = await import('pdf-lib');
-} catch (error) {
-  console.error('❌ Error: pdf-lib package not found');
-  console.error('   Install it with: npm install --save-dev pdf-lib');
-  process.exit(1);
-}
+let pdfLib: any;
 
 const OUTPUT_DIR = process.env.PDF_OUTPUT_DIR || './tmp';
 const TEST_PDF_FILENAME = 'probe_test.pdf';
@@ -282,6 +275,15 @@ async function probePdf() {
  * Main probe execution
  */
 async function main() {
+  // Import pdf-lib
+  try {
+    pdfLib = await import('pdf-lib');
+  } catch (error) {
+    console.error('❌ Error: pdf-lib package not found');
+    console.error('   Install it with: npm install --save-dev pdf-lib');
+    process.exit(1);
+  }
+
   console.log('🚀 Starting PDF Generation Probe...\n');
   
   const success = await probePdf();

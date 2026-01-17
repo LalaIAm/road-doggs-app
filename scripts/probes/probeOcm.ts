@@ -93,7 +93,7 @@ async function fetchEVStations(latitude: number, longitude: number, maxResults: 
     const url = new URL(baseUrl);
     
     // Query parameters
-    url.searchParams.append('key', OPEN_CHARGE_MAP_API_KEY);
+    url.searchParams.append('key', OPEN_CHARGE_MAP_API_KEY || '');
     url.searchParams.append('latitude', latitude.toString());
     url.searchParams.append('longitude', longitude.toString());
     url.searchParams.append('distance', '50'); // 50km radius
@@ -103,14 +103,14 @@ async function fetchEVStations(latitude: number, longitude: number, maxResults: 
     url.searchParams.append('includecomments', 'false');
     url.searchParams.append('verbose', 'false');
     
-    console.log('📤 Request URL:', url.toString().replace(OPEN_CHARGE_MAP_API_KEY, '***'));
+    console.log('📤 Request URL:', url.toString().replace(OPEN_CHARGE_MAP_API_KEY || '', '***'));
     console.log('');
     
     const response = await fetch(url.toString(), {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'X-API-Key': OPEN_CHARGE_MAP_API_KEY,
+        'X-API-Key': OPEN_CHARGE_MAP_API_KEY || '',
       },
     });
     
@@ -119,7 +119,7 @@ async function fetchEVStations(latitude: number, longitude: number, maxResults: 
       throw new Error(`HTTP ${response.status}: ${errorText}`);
     }
     
-    const data: OCMResponse = await response.json();
+    const data = await response.json() as OCMResponse;
     
     if (data.IsError) {
       throw new Error(`API Error: ${data.ErrorMessage || 'Unknown error'}`);
@@ -284,7 +284,7 @@ function displaySampleStation(station: OCMStation): void {
 async function probeOCM() {
   try {
     console.log('🧪 Probing Open Charge Map API...');
-    console.log(`   API Key: ${OPEN_CHARGE_MAP_API_KEY.substring(0, 10)}...`);
+    console.log(`   API Key: ${(OPEN_CHARGE_MAP_API_KEY || '').substring(0, 10)}...`);
     console.log('');
     
     // Search for EV stations near a known location (Las Vegas, NV)

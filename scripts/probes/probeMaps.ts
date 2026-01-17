@@ -17,13 +17,7 @@
 // Note: For Node.js, we use the REST API directly
 // The browser would use @react-google-maps/api or @googlemaps/js-api-loader
 
-let crypto;
-try {
-  crypto = await import('crypto');
-} catch (error) {
-  console.error('❌ Error: crypto module not found');
-  process.exit(1);
-}
+import * as crypto from 'crypto';
 
 const GOOGLE_MAPS_API_KEY = process.env.REACT_APP_GOOGLE_MAPS_KEY || process.env.GOOGLE_MAPS_API_KEY;
 
@@ -98,10 +92,10 @@ async function getPlacePredictions(query: string, sessionToken: string): Promise
     const baseUrl = 'https://maps.googleapis.com/maps/api/place/autocomplete/json';
     const url = new URL(baseUrl);
     url.searchParams.append('input', query);
-    url.searchParams.append('key', GOOGLE_MAPS_API_KEY);
+    url.searchParams.append('key', GOOGLE_MAPS_API_KEY || '');
     url.searchParams.append('sessiontoken', sessionToken);
     
-    console.log('📤 Request URL:', url.toString().replace(GOOGLE_MAPS_API_KEY, '***'));
+    console.log('📤 Request URL:', url.toString().replace(GOOGLE_MAPS_API_KEY || '', '***'));
     console.log('');
     
     const response = await fetch(url.toString());
@@ -111,7 +105,7 @@ async function getPlacePredictions(query: string, sessionToken: string): Promise
       throw new Error(`HTTP ${response.status}: ${errorText}`);
     }
     
-    const data = await response.json();
+    const data: any = await response.json();
     
     if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
       throw new Error(`API Error: ${data.status} - ${data.error_message || 'Unknown error'}`);
@@ -162,11 +156,11 @@ async function getPlaceDetails(placeId: string, sessionToken: string): Promise<a
     const baseUrl = 'https://maps.googleapis.com/maps/api/place/details/json';
     const url = new URL(baseUrl);
     url.searchParams.append('place_id', placeId);
-    url.searchParams.append('key', GOOGLE_MAPS_API_KEY);
+    url.searchParams.append('key', GOOGLE_MAPS_API_KEY || '');
     url.searchParams.append('sessiontoken', sessionToken);
     url.searchParams.append('fields', 'name,formatted_address,geometry,rating,user_ratings_total,types,place_id');
     
-    console.log('📤 Request URL:', url.toString().replace(GOOGLE_MAPS_API_KEY, '***'));
+    console.log('📤 Request URL:', url.toString().replace(GOOGLE_MAPS_API_KEY || '', '***'));
     console.log('');
     
     const response = await fetch(url.toString());
@@ -176,7 +170,7 @@ async function getPlaceDetails(placeId: string, sessionToken: string): Promise<a
       throw new Error(`HTTP ${response.status}: ${errorText}`);
     }
     
-    const data = await response.json();
+    const data: any = await response.json();
     
     if (data.status !== 'OK') {
       throw new Error(`API Error: ${data.status} - ${data.error_message || 'Unknown error'}`);
@@ -250,7 +244,7 @@ function verifyPayloadStructure(predictions: any[], details: any, sessionToken: 
 async function probeMapsSession() {
   try {
     console.log('🧪 Probing Google Maps Places API...');
-    console.log(`   API Key: ${GOOGLE_MAPS_API_KEY.substring(0, 10)}...`);
+    console.log(`   API Key: ${(GOOGLE_MAPS_API_KEY || '').substring(0, 10)}...`);
     console.log('');
     
     // Step 1: Initialize Session Token
