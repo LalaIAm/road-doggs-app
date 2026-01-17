@@ -29,3 +29,6 @@ export const authFunctions = functions
     memory: "1GB",
   })
   .https.onRequest(app);
+
+// Firestore triggers
+export { onTripDelete } from "./triggers/firestore/onTripDelete";
