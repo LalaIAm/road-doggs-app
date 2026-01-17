@@ -55,6 +55,7 @@ jobs:
       - name: Upload coverage reports
         if: always()
         uses: codecov/codecov-action@v4
+        
         with:
           directory: apps/web/coverage
           flags: unit-tests
@@ -64,6 +65,10 @@ jobs:
   test-e2e:
     name: E2E Tests
     runs-on: ubuntu-latest
+    strategy: 
+      fail-fast: false 
+      matrix: 
+        containers: [1, 2]
     # Skip E2E on PRs unless explicitly requested
     if: github.event_name == 'push' || contains(github.event.pull_request.labels.*.name, 'run-e2e')
     steps:
@@ -93,18 +98,15 @@ jobs:
       - name: Install wait-on
         run: npm install -g wait-on 
 
-      - name: Start preview server
-        working-directory: apps/web
-        run: npm run preview & wait-on http://localhost:5173
+      - name: Cypress testing
+        uses: cypress-io/github-action@v6
+        with:
+          start: npm run preview
+          wait-on: http://localhost:5133
+          record: true 
+          parallel: true
         env:
           PORT: 5173
-
-      - name: Run Cypress e2e tests
-        working-directory: apps/web
-        run: npm run test:e2e
-        env:
-          PORT: 5173
-          CYPRESS_baseUrl: http://localhost:5173
 
       - name: Upload Cypress screenshots
         if: failure()
