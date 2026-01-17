@@ -282,7 +282,7 @@ describe('Preference Onboarding', () => {
 
     it('should display completion message', () => {
       cy.contains("You're all set").should('be.visible');
-      cy.contains('We've customized the map engine').should('be.visible');
+      cy.contains("We've customized the map engine").should('be.visible');
     });
 
     it('should display "Plan My First Trip" button', () => {
