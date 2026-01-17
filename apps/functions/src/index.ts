@@ -32,3 +32,6 @@ export const authFunctions = functions
 
 // Firestore triggers
 export { onTripDelete } from "./triggers/firestore/onTripDelete";
+
+// HTTP triggers
+export { fetchAiRecommendations } from "./triggers/http/fetchAiRecommendations";
