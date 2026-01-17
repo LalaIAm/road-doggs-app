@@ -1,0 +1,88 @@
+
+> @roaddoggs/web@1.0.0 test
+> vitest
+
+
+[1m[46m RUN [49m[22m [36mv4.0.17 [39m[90mC:/Users/lthor/OneDrive/a-road-dog-brand/rdgs/apps/web[39m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Unhandled Errors [49m[22m[31m⎯⎯⎯⎯⎯⎯[39m
+[31m[1m
+
+Vitest caught 5 unhandled errors during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.[22m[39m
+[2m Test Files [22m [2mno tests[22m
+[2m      Tests [22m [2mno tests[22m
+[2m     Errors [22m [1m[31m5 errors[39m[22m
+[2m   Start at [22m 20:50:40
+[2m   Duration [22m 60.24s[2m (transform 0ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)[22m
+
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Unhandled Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: [vitest-pool]: Failed to start forks worker for test files C:/Users/lthor/OneDrive/a-road-dog-brand/rdgs/apps/web/src/store/onboardingSlice.test.js.[39m
+[90m [2m❯[22m ../../node_modules/vitest/dist/chunks/cli-api.Cx2DW4Bc.js:[2m8046:94[22m[39m
+[90m [2m❯[22m Pool.schedule ../../node_modules/vitest/dist/chunks/cli-api.Cx2DW4Bc.js:[2m8046:5[22m[39m
+
+[31m[1mCaused by: Error[22m: [vitest-pool-runner]: Timeout waiting for worker to respond[39m
+[90m [2m❯[22m Timeout.<anonymous> ../../node_modules/vitest/dist/chunks/cli-api.Cx2DW4Bc.js:[2m7626:58[22m[39m
+[90m [2m❯[22m listOnTimeout node:internal/timers:[2m588:17[22m[39m
+[90m [2m❯[22m processTimers node:internal/timers:[2m523:7[22m[39m
+
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Unhandled Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: [vitest-pool]: Failed to start forks worker for test files C:/Users/lthor/OneDrive/a-road-dog-brand/rdgs/apps/web/src/store/authSlice.test.js.[39m
+[90m [2m❯[22m ../../node_modules/vitest/dist/chunks/cli-api.Cx2DW4Bc.js:[2m8046:94[22m[39m
+[90m [2m❯[22m runNextTicks node:internal/process/task_queues:[2m65:5[22m[39m
+[90m [2m❯[22m listOnTimeout node:internal/timers:[2m549:9[22m[39m
+[90m [2m❯[22m processTimers node:internal/timers:[2m523:7[22m[39m
+[90m [2m❯[22m Pool.schedule ../../node_modules/vitest/dist/chunks/cli-api.Cx2DW4Bc.js:[2m8046:5[22m[39m
+
+[31m[1mCaused by: Error[22m: [vitest-pool-runner]: Timeout waiting for worker to respond[39m
+[90m [2m❯[22m Timeout.<anonymous> ../../node_modules/vitest/dist/chunks/cli-api.Cx2DW4Bc.js:[2m7626:58[22m[39m
+[90m [2m❯[22m listOnTimeout node:internal/timers:[2m588:17[22m[39m
+[90m [2m❯[22m processTimers node:internal/timers:[2m523:7[22m[39m
+
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Unhandled Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: [vitest-pool]: Failed to start forks worker for test files C:/Users/lthor/OneDrive/a-road-dog-brand/rdgs/apps/web/src/utils/analytics.test.js.[39m
+[90m [2m❯[22m ../../node_modules/vitest/dist/chunks/cli-api.Cx2DW4Bc.js:[2m8046:94[22m[39m
+[90m [2m❯[22m runNextTicks node:internal/process/task_queues:[2m65:5[22m[39m
+[90m [2m❯[22m listOnTimeout node:internal/timers:[2m549:9[22m[39m
+[90m [2m❯[22m processTimers node:internal/timers:[2m523:7[22m[39m
+[90m [2m❯[22m Pool.schedule ../../node_modules/vitest/dist/chunks/cli-api.Cx2DW4Bc.js:[2m8046:5[22m[39m
+
+[31m[1mCaused by: Error[22m: [vitest-pool-runner]: Timeout waiting for worker to respond[39m
+[90m [2m❯[22m Timeout.<anonymous> ../../node_modules/vitest/dist/chunks/cli-api.Cx2DW4Bc.js:[2m7626:58[22m[39m
+[90m [2m❯[22m listOnTimeout node:internal/timers:[2m588:17[22m[39m
+[90m [2m❯[22m processTimers node:internal/timers:[2m523:7[22m[39m
+
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Unhandled Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: [vitest-pool]: Failed to start forks worker for test files C:/Users/lthor/OneDrive/a-road-dog-brand/rdgs/apps/web/src/utils/localStorage.test.js.[39m
+[90m [2m❯[22m ../../node_modules/vitest/dist/chunks/cli-api.Cx2DW4Bc.js:[2m8046:94[22m[39m
+[90m [2m❯[22m Pool.schedule ../../node_modules/vitest/dist/chunks/cli-api.Cx2DW4Bc.js:[2m8046:5[22m[39m
+
+[31m[1mCaused by: Error[22m: [vitest-pool-runner]: Timeout waiting for worker to respond[39m
+[90m [2m❯[22m Timeout.<anonymous> ../../node_modules/vitest/dist/chunks/cli-api.Cx2DW4Bc.js:[2m7626:58[22m[39m
+[90m [2m❯[22m listOnTimeout node:internal/timers:[2m588:17[22m[39m
+[90m [2m❯[22m processTimers node:internal/timers:[2m523:7[22m[39m
+
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Unhandled Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: [vitest-pool]: Failed to start forks worker for test files C:/Users/lthor/OneDrive/a-road-dog-brand/rdgs/apps/web/src/store/profileSlice.test.js.[39m
+[90m [2m❯[22m ../../node_modules/vitest/dist/chunks/cli-api.Cx2DW4Bc.js:[2m8046:94[22m[39m
+[90m [2m❯[22m Pool.schedule ../../node_modules/vitest/dist/chunks/cli-api.Cx2DW4Bc.js:[2m8046:5[22m[39m
+
+[31m[1mCaused by: Error[22m: [vitest-pool-runner]: Timeout waiting for worker to respond[39m
+[90m [2m❯[22m Timeout.<anonymous> ../../node_modules/vitest/dist/chunks/cli-api.Cx2DW4Bc.js:[2m7626:58[22m[39m
+[90m [2m❯[22m listOnTimeout node:internal/timers:[2m588:17[22m[39m
+[90m [2m❯[22m processTimers node:internal/timers:[2m523:7[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[39m
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path C:\Users\lthor\OneDrive\a-road-dog-brand\rdgs\apps\web
+npm error workspace @roaddoggs/web@1.0.0
+npm error location C:\Users\lthor\OneDrive\a-road-dog-brand\rdgs\apps\web
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c vitest

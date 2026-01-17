@@ -1,0 +1,35 @@
+---
+description: Git Branching & Commit Policy
+globs: **/*
+alwaysApply: true
+---
+
+# Git Branching & Commit Policy
+
+## Branching
+
+- For every **major feature or significant change**, always create a **new git branch** from the main development branch before writing code.
+- Use clear, descriptive branch names (e.g. `feature/auth-flow`, `feature/dashboard-metrics`).
+- Never commit directly to `main` or `develop` unless explicitly instructed.
+- If there is any uncertainty about whether work qualifies as a major feature, **default to creating a new branch**.
+
+## Commits
+
+- Treat each **completed task** as a commit boundary.
+- A task is considered complete when:
+  - The implementation is finished
+  - The solution is correct and stable
+  - No immediate follow-up changes are required
+
+- After completing a task, the agent must:
+  1. Stage only the relevant changes
+  2. Create a clear, descriptive commit message
+  3. Push the commit to GitHub immediately
+
+- Do not bundle multiple completed tasks into a single commit.
+- Do not continue working on a feature without committing completed tasks.
+
+## Enforcement
+
+- Always assume a new branch is required unless explicitly told otherwise.
+- Always push commits after task completion.
