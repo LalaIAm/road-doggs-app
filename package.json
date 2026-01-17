@@ -11,12 +11,16 @@
     "dev": "turbo run dev",
     "build": "turbo run build",
     "test": "turbo run test",
+    "test:firestore": "firebase emulators:exec --only firestore 'jest --config tests/jest.config.js'",
     "lint": "turbo run lint",
     "type-check": "turbo run type-check",
     "preview": "npm run preview --workspace=apps/web",
     "canary": "node scripts/canary-test.js"
   },
   "devDependencies": {
+    "@firebase/rules-unit-testing": "^5.0.0",
+    "@google-cloud/vertexai": "^1.10.0",
+    "pdf-lib": "^1.17.1",
     "turbo": "^2.0.0",
     "wait-on": "^9.0.3"
   }

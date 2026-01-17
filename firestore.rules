@@ -4,41 +4,77 @@ service cloud.firestore {
   match /databases/{database}/documents {
     
     // Helper function to check if user is authenticated
+    // Per TRD-310: Security Rules base requirement
     function isAuthenticated() {
       return request.auth != null;
     }
     
-    // Helper function to check if user owns the resource
-    function isOwner(userId) {
-      return isAuthenticated() && request.auth.uid == userId;
+    // RBAC Implementation
+    // Per TRD-311: isOwner function
+    function isOwner(resource) {
+      return isAuthenticated() && request.auth.uid == resource.data.ownerId;
+    }
+    
+    // Per TRD-311: canEdit function
+    // Returns true if user is owner OR is in collaboratorIds array
+    function canEdit(resource) {
+      return isOwner(resource) || 
+             (resource.data.collaboratorIds != null && 
+              resource.data.collaboratorIds.hasAny([request.auth.uid]));
+    }
+    
+    // Helper function to check if user can view (owner, collaborator, or viewer)
+    function canView(resource) {
+      return isOwner(resource) || 
+             (resource.data.collaboratorIds != null && 
+              resource.data.collaboratorIds.hasAny([request.auth.uid])) ||
+             (resource.data.viewerIds != null && 
+              resource.data.viewerIds.hasAny([request.auth.uid]));
     }
     
     // Users collection
     // Users can read and write their own user document
-    // Note: Cloud Functions update auditLog using admin SDK, so no special rule needed
     match /users/{userId} {
-      allow read, write: if isOwner(userId);
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
     }
     
     // Trips collection
-    // Users can read and write trips they own (where userId field matches)
-    // Also allow read access for collaborators (if collaborators field exists)
+    // Per TRD-313: Data Validation Rules with RBAC
     match /trips/{tripId} {
-      allow read: if isAuthenticated() && 
-        (resource.data.userId == request.auth.uid || 
-         (resource.data.collaborators != null && 
-          request.auth.uid in resource.data.collaborators));
+      // Read: Owner, collaborators, or viewers can read
+      allow read: if isAuthenticated() && canView(resource);
       
+      // Create: Must be authenticated and set ownerId to current user
+      // Per TRD-313: Data validation - title must be at least 3 characters
       allow create: if isAuthenticated() && 
-        request.resource.data.userId == request.auth.uid;
+        request.resource.data.ownerId == request.auth.uid &&
+        request.resource.data.title.size() > 3 &&
+        request.resource.data.title.size() <= 100;
       
-      allow update: if isAuthenticated() && 
-        (resource.data.userId == request.auth.uid ||
-         (resource.data.collaborators != null && 
-          request.auth.uid in resource.data.collaborators));
+      // Update: Must be able to edit (owner or collaborator)
+      // Per TRD-313: Data validation - title must be at least 3 characters if provided
+      allow update: if isAuthenticated() && canEdit(resource) &&
+        (!request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastModified']) &&
+         (request.resource.data.title == null || 
+          (request.resource.data.title.size() > 3 && 
+           request.resource.data.title.size() <= 100))) &&
+        // Prevent changing ownerId
+        request.resource.data.ownerId == resource.data.ownerId;
       
-      allow delete: if isAuthenticated() && 
-        resource.data.userId == request.auth.uid;
+      // Delete: Only owner can delete
+      allow delete: if isAuthenticated() && isOwner(resource);
+    }
+    
+    // Waypoints subcollection
+    // Per TRD-313: Waypoints inherit edit permissions from parent trip
+    match /trips/{tripId}/waypoints/{wpId} {
+      // Read: Same as parent trip
+      allow read: if isAuthenticated() && 
+        canView(get(/databases/$(database)/documents/trips/$(tripId)));
+      
+      // Write: Must be able to edit parent trip (per TRD-313)
+      allow write: if isAuthenticated() && 
+        canEdit(get(/databases/$(database)/documents/trips/$(tripId)));
     }
     
     // Share links collection
@@ -61,7 +97,7 @@ service cloud.firestore {
     // Preferences collection
     // Users can read and write their own preferences
     match /preferences/{userId} {
-      allow read, write: if isOwner(userId);
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
     }
     
     // Jobs collection (created by Cloud Functions)
