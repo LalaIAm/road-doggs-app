@@ -8,7 +8,7 @@ import { verifyToken, requireRecentAuth, verifyPrivacyConsent, AuthenticatedRequ
 import { createJob, updateJobStatus, getJob, hasActiveJob } from '../utils/jobStatus';
 import { auditActions } from '../utils/audit';
 import { sendDeletionCompletionEmail } from '../utils/email';
-import { deleteFilesByPrefix } from '../utils/storage';
+import { createStorageAdapter } from '../adapters/storage/StorageAdapter';
 
 const BATCH_SIZE = 500; // Firestore batch write limit
 
@@ -218,8 +218,9 @@ async function processDeletionJob(uid: string, jobId: string): Promise<void> {
     
     // Step 4: Delete Cloud Storage files (profile photos, exports)
     await auditActions.deletionStep(uid, jobId, 'deleting_storage_files');
-    filesDeleted += await deleteFilesByPrefix(`users/${uid}/`);
-    filesDeleted += await deleteFilesByPrefix(`exports/${uid}/`);
+    const storageAdapter = createStorageAdapter();
+    filesDeleted += await storageAdapter.deleteFilesByPrefix(`users/${uid}/`);
+    filesDeleted += await storageAdapter.deleteFilesByPrefix(`exports/${uid}/`);
     await auditActions.deletionStep(uid, jobId, 'storage_files_deleted', { count: filesDeleted });
     
     // Step 5: Anonymize or delete user document (keep minimal audit trail)

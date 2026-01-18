@@ -8,7 +8,8 @@ import archiver from 'archiver';
 import { verifyToken, requireRecentAuth, verifyPrivacyConsent, AuthenticatedRequest } from '../utils/auth';
 import { createJob, updateJobStatus, getJob, hasActiveJob } from '../utils/jobStatus';
 import { gatherUserData } from '../utils/dataGatherer';
-import { uploadEncryptedFile, generateSignedUrl } from '../utils/storage';
+import { getEncryptionKey, encrypt } from '../utils/encryption';
+import { createStorageAdapter } from '../adapters/storage/StorageAdapter';
 import { auditActions } from '../utils/audit';
 import { sendExportCompletionEmail } from '../utils/email';
 
@@ -180,21 +181,47 @@ async function processExportJob(uid: string, jobId: string): Promise<void> {
     // Gather user data
     const exportData = await gatherUserData(uid);
     
+    // Initialize storage adapter
+    const storageAdapter = createStorageAdapter();
+    
     // Create JSON export
     const jsonData = JSON.stringify(exportData, null, 2);
     const jsonPath = `exports/${uid}/${jobId}/data.json`;
-    await uploadEncryptedFile(jsonData, jsonPath, 'application/json');
+    
+    // Encrypt data before uploading
+    const encryptionKey = getEncryptionKey();
+    const encryptedJsonData = encrypt(jsonData, encryptionKey);
+    await storageAdapter.uploadFile(
+      jsonPath,
+      Buffer.from(encryptedJsonData, 'base64'),
+      {
+        contentType: 'application/json',
+        encrypted: true,
+      }
+    );
     
     // Create ZIP archive (optional, for larger exports)
     const zipBuffer = await createZipArchive(exportData);
+    const encryptedZipData = encrypt(zipBuffer, encryptionKey);
     const zipPath = `exports/${uid}/${jobId}/data.zip`;
-    await uploadEncryptedFile(zipBuffer, zipPath, 'application/zip');
+    await storageAdapter.uploadFile(
+      zipPath,
+      Buffer.from(encryptedZipData, 'base64'),
+      {
+        contentType: 'application/zip',
+        encrypted: true,
+      }
+    );
     
-    // Generate signed URLs (1 hour TTL)
-    const jsonUrl = await generateSignedUrl(jsonPath, 3600);
-    const zipUrl = await generateSignedUrl(zipPath, 3600);
+    // Generate signed URLs (15 minutes TTL per TRD-272)
+    const jsonUrl = await storageAdapter.generateSignedUrl(jsonPath, {
+      expirationMinutes: 15,
+    });
+    const zipUrl = await storageAdapter.generateSignedUrl(zipPath, {
+      expirationMinutes: 15,
+    });
     
-    const expiresAt = new Date(Date.now() + 3600 * 1000).toISOString();
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
     
     // Update job with results
     await updateJobStatus(jobId, 'completed', {
