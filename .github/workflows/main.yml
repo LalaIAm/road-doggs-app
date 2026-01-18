@@ -91,7 +91,8 @@ jobs:
         run: npm ci
 
       - name: Run tests
-        run: npm run test
+        run: node --max-old-space-size=4096 ./node_modules/.bin/jest
+        working-directory: ./apps/functions
 
       - name: Upload coverage reports
         if: always()

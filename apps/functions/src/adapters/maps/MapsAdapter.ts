@@ -267,8 +267,8 @@ export function createMapsAdapter(overrides?: Partial<MapsAdapterConfig>): MapsA
 
   return new MapsAdapter({
     apiKey,
-    baseURL: overrides?.baseURL || 'https://maps.googleapis.com',
-    maxRetries: overrides?.maxRetries || 3,
-    retryDelay: overrides?.retryDelay || 1000,
+    baseURL: overrides?.baseURL ?? 'https://maps.googleapis.com',
+    maxRetries: overrides?.maxRetries ?? 3,
+    retryDelay: overrides?.retryDelay ?? 1000,
   });
 }
