@@ -64,9 +64,7 @@ export const generateShareLink = functions
   })
   .https.onRequest(async (req: Request, res: Response) => {
     // Per TRD-228: Verify authentication
-    await new Promise<void>((resolve) => {
-      verifyToken(req as AuthenticatedRequest, res, () => resolve());
-    });
+    await verifyToken(req as AuthenticatedRequest, res, () => undefined);
 
     const authReq = req as AuthenticatedRequest;
     if (!authReq.uid) {
