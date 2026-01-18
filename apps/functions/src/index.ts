@@ -35,3 +35,4 @@ export { onTripDelete } from "./triggers/firestore/onTripDelete";
 
 // HTTP triggers
 export { fetchAiRecommendations } from "./triggers/http/fetchAiRecommendations";
+export { generateShareLink } from "./triggers/http/generateShareLink";
