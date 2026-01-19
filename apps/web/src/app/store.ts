@@ -47,9 +47,16 @@ export const listenerMiddleware = createListenerMiddleware();
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
 // Configure serializable check middleware to ignore Firebase Timestamps
-// as per TRD-158
+// as per TRD-158, and redux-persist actions which contain functions
 const serializableCheck = {
   ignoredActions: [
+    // Redux-persist actions that contain functions
+    'persist/PERSIST',
+    'persist/REHYDRATE',
+    'persist/REGISTER',
+    'persist/PAUSE',
+    'persist/PURGE',
+    'persist/FLUSH',
     // Actions that may contain Firebase Timestamps
     'auth/setCurrentUser',
     'auth/initialize/fulfilled',
@@ -61,6 +68,8 @@ const serializableCheck = {
     'payload.createdAt',
     'payload.updatedAt',
     'payload.metadata',
+    'register', // redux-persist register function
+    'rehydrate', // redux-persist rehydrate function
   ],
   ignoredPaths: [
     'auth.currentUser.metadata',
