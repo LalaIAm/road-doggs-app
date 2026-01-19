@@ -6,19 +6,10 @@ import authReducer from '../store/authSlice';
 import profileReducer from '../store/profileSlice';
 import onboardingReducer from '../store/onboardingSlice';
 import { api } from '../store/api';
-
-// Placeholder reducers for future slices (will be implemented in later phases)
-// These are temporary empty reducers to satisfy the store structure requirements
-const tripReducer = (state = { trips: [], currentTrip: null, isLoading: false }, action: any) => state;
-const waypointsReducer = (state = { ids: [], entities: {} }, action: any) => state;
-const uiReducer = (state = { sidebarOpen: false, theme: 'light' }, action: any) => state;
-const offlineReducer = (state = { 
-  queue: [], 
-  status: 'IDLE', // IDLE | OFFLINE | PENDING_WRITES | SYNCING | ERROR
-  networkStatus: typeof navigator !== 'undefined' ? navigator.onLine : true,
-  lastSyncAt: null,
-  error: null
-}, action: any) => state;
+import tripReducer from './slices/tripSlice';
+import waypointsReducer from './slices/waypointsSlice';
+import uiReducer from './slices/uiSlice';
+import offlineReducer from './slices/offlineSlice';
 
 // Root reducer
 const rootReducer = combineReducers({
@@ -45,6 +36,9 @@ export const listenerMiddleware = createListenerMiddleware();
 
 // Create persisted reducer
 const persistedReducer = persistReducer(persistConfig, rootReducer);
+
+// Initialize Sync Manager after store is created
+let syncManager: any = null;
 
 // Configure serializable check middleware to ignore Firebase Timestamps
 // as per TRD-158, and redux-persist actions which contain functions
@@ -94,6 +88,58 @@ export const store = configureStore({
 
 // Create persistor
 export const persistor = persistStore(store);
+
+// Initialize Sync Manager
+// Import dynamically to avoid circular dependencies
+if (typeof window !== 'undefined') {
+  import('./sync/SyncManager').then(({ SyncManager }) => {
+    syncManager = new SyncManager(store);
+    
+    // Set up action listener for actions with meta.sync === true
+    // As per TRD-174-176: Route actions to Firestore SDK or queue
+    listenerMiddleware.startListening({
+      predicate: (action, currentState, previousState) => {
+        // Check if action has meta.sync === true
+        return (action as any).meta?.sync === true;
+      },
+      effect: async (action, listenerApi) => {
+        const state = listenerApi.getState() as RootState;
+        const { networkStatus, status } = state.offline;
+        
+        // Create SyncAction from the dispatched action
+        const syncAction: any = {
+          id: `sync-${Date.now()}-${Math.random()}`,
+          type: (action as any).meta.syncType || 'UPDATE_TRIP',
+          payload: action.payload,
+          timestamp: Date.now(),
+          retryCount: 0,
+        };
+        
+        // As per TRD-175: If IDLE, send directly to Firestore SDK
+        if (status === 'IDLE' && networkStatus) {
+          try {
+            const { executeSyncAction } = await import('./sync/firestoreOperations');
+            await executeSyncAction(syncAction);
+            // Success - action was synced immediately
+          } catch (error: any) {
+            // If direct sync fails, add to queue
+            if (syncManager) {
+              syncManager.addToSyncQueue(syncAction);
+            }
+          }
+        } else {
+          // As per TRD-176: If OFFLINE or SYNCING, serialize and push to queue
+          if (syncManager) {
+            syncManager.addToSyncQueue(syncAction);
+          }
+        }
+      },
+    });
+  });
+}
+
+// Export sync manager for external access if needed
+export { syncManager };
 
 // Export types
 export type RootState = ReturnType<typeof store.getState>;
