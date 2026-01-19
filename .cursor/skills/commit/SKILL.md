@@ -1,8 +1,8 @@
 ---
 name: commit
-description: This is a new rule
+description: Commit and push
 ---
 
 # Overview
 
-Insert overview text here. The agent will only see this should they choose to apply the rule.
+After each task, commit all changes and push to Github
