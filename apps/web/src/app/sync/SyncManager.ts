@@ -15,6 +15,7 @@ import {
 } from '../slices/offlineSlice';
 import { executeSyncAction, isTerminalError } from './firestoreOperations';
 import { SyncAction, SyncStatus } from './types';
+import { ConflictResolver } from './ConflictResolver';
 
 /**
  * Retry configuration
@@ -132,15 +133,45 @@ export class SyncManager {
         } catch (error: any) {
           // Check if this is a terminal error
           if (isTerminalError(error)) {
-            // Terminal error: trigger rollback
+            // Terminal error: use ConflictResolver to handle rollback
             // As per TRD-24: Rollback to last known server state
-            console.error('Terminal sync error, triggering rollback:', error);
-            this.dispatch(setError(error.message || 'Sync failed with terminal error'));
-            this.dispatch(clearQueue());
-            break;
+            console.error('Terminal sync error, resolving conflict:', error);
+            
+            const resolution = await this.conflictResolver.resolveConflict(action, error);
+            
+            if (resolution.resolved) {
+              // Conflict resolved - remove from queue
+              this.dispatch(removeFromQueue(action.id));
+              
+              if (resolution.rolledBack) {
+                this.dispatch(setError('Sync failed: changes were rolled back due to conflict'));
+              } else {
+                this.dispatch(setError(null));
+              }
+            } else {
+              // Resolution failed - clear queue and set error
+              this.dispatch(setError(resolution.error || 'Sync failed with terminal error'));
+              this.dispatch(clearQueue());
+              break;
+            }
+            
+            // Continue processing next item
+            continue;
           }
 
-          // Non-terminal error: increment retry count and schedule retry
+          // Non-terminal error: try to resolve conflict first
+          // If conflict resolution succeeds, remove from queue
+          // Otherwise, increment retry count and schedule retry
+          const resolution = await this.conflictResolver.resolveConflict(action, error);
+          
+          if (resolution.resolved && !resolution.rolledBack) {
+            // Conflict resolved, server state accepted - remove from queue
+            this.dispatch(removeFromQueue(action.id));
+            this.dispatch(setLastSyncAt(Date.now()));
+            continue;
+          }
+          
+          // Conflict not resolved or rolled back - retry with exponential backoff
           this.dispatch(incrementRetryCount(action.id));
           
           const retryCount = action.retryCount + 1;
